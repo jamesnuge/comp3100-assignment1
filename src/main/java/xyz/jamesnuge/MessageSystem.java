@@ -32,16 +32,17 @@ public class MessageSystem {
 
     public Either<String, String> init() {
         System.out.println("Connect to server...");
-        try (final Socket socket = new Socket(host, port)) {
+        try {
+            final Socket socket = new Socket(host, port);
             System.out.println("Connected to server");
             final InputStream is = socket.getInputStream();
             final OutputStream os = socket.getOutputStream();
-            writer = new PrintWriter(os, true);
+            writer = new PrintWriter(os);
             reader = new BufferedReader(new InputStreamReader(is));
             initialized = true;
             return right("Initialised system");
         } catch (IOException e) {
-            return left("Unable to initialise message system: " + e.getMessage());
+            return left("Unable to initialize message system: " + e.getMessage());
         }
     }
 

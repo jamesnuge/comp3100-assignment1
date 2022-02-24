@@ -38,20 +38,12 @@ public class MessageParser {
     }
 
     public static Either<String, String> sendMessage(final PrintWriter writer, String message) {
-        if (writer.checkError()) {
-            return Either.left("Write stream had an error");
-        }
         writer.println(message);
         writer.flush();
         return Either.right("Sent message");
     }
 
     public static Either<String, String> sendMessage(final PrintWriter writer, Enum message) {
-        if (writer.checkError()) {
-            return Either.left("Write stream had an error");
-        }
-        writer.println(message.name());
-        writer.flush();
-        return Either.right("Sent message");
+        return sendMessage(writer, message.name());
     }
 }

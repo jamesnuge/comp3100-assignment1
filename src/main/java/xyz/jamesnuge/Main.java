@@ -20,6 +20,7 @@ public class Main {
                             (s) -> messageSystem.getMessage(Message.OK)
                     )
             );
-            // TODO: Load the ds-system.xml
+        System.out.println(result);
+        // TODO: Load the ds-system.xml
     }
 }
