@@ -2,9 +2,16 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'application'
 
-mainClassName = 'xyz.jamesnuge.Test'
+mainClassName = 'xyz.jamesnuge.Main'
 
-// tag::repositories[]
-repositories { 
+repositories {
     mavenCentral() 
 }
+
+dependencies {
+    implementation 'org.functionaljava:functionaljava:4.9'
+    implementation 'dev.failsafe:failsafe:3.2.2'
+    implementation 'net.time4j:time4j-core:4.38'
+}
+
+
