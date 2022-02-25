@@ -46,3 +46,5 @@ atlassian-ide-plugin.xml
 .vscode/
 gradle/
 .tool-versions
+
+ds-system.xml

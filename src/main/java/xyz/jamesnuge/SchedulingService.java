@@ -1,10 +1,9 @@
 package xyz.jamesnuge;
 
 import java.io.File;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import org.w3c.dom.Document;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Unmarshaller;
+import xyz.jamesnuge.config.SystemConfig;
 
 public class SchedulingService {
 
@@ -18,19 +17,15 @@ public class SchedulingService {
     }
 
     public void init() {
-        final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         final String fileName = System.getProperty("user.dir") + DS_SYSTEM_FILENAME;
 
         try {
             final File xmlFile = new File(fileName);
-            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            final DocumentBuilder db = dbf.newDocumentBuilder();
-            final Document doc = db.parse(new File(fileName));
+            JAXBContext jaxbContext = JAXBContext.newInstance(SystemConfig.class);
 
-            doc.getDocumentElement().normalize();
-
-            System.out.println("Root Element :" + doc.getDocumentElement().getNodeName());
-            System.out.println("------");
+            Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+            SystemConfig sys = (SystemConfig) jaxbUnmarshaller.unmarshal(xmlFile);
+            System.out.println(sys);
             this.isInitialized = true;
         } catch (final Exception e) {
             e.printStackTrace();

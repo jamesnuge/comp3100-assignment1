@@ -21,6 +21,8 @@ public class Main {
                     )
             );
         System.out.println(result);
+        final SchedulingService schedulingService = new SchedulingService(System.getProperty("user.dir"));
+        schedulingService.init();
         // TODO: Load the ds-system.xml
     }
 }

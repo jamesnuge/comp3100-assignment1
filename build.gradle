@@ -10,8 +10,11 @@ repositories {
 
 dependencies {
     implementation 'org.functionaljava:functionaljava:4.9'
-    implementation 'dev.failsafe:failsafe:3.2.2'
     implementation 'net.time4j:time4j-core:4.38'
+    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0-RC3'
+    implementation 'org.glassfish.jaxb:jaxb-runtime:3.0.2'
+
+
 }
 
 
