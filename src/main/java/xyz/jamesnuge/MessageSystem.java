@@ -8,11 +8,16 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.List;
 import java.util.function.Supplier;
+import xyz.jamesnuge.MessageParser.InboudMessage;
 import xyz.jamesnuge.MessageParser.Message;
+import xyz.jamesnuge.state.ServerState;
+import xyz.jamesnuge.state.ServerStateItem;
 
 import static fj.data.Either.left;
 import static fj.data.Either.right;
+import static xyz.jamesnuge.Util.chain;
 
 public class MessageSystem {
 
@@ -46,6 +51,17 @@ public class MessageSystem {
         }
     }
 
+    public Either<String, List<ServerStateItem>> getServerState() {
+        chain(
+                sendMessage(Message.GETS),
+                List.of(
+                        (s) -> getMessage(InboudMessage.DATA),
+                        (s) -> sendMessage(Message.OK),
+                        (s) -> getMessage()
+                )
+        ).rightMap(ServerState::parseServerStateFromString);
+    }
+
     public Either<String, String> sendMessage(Message message) {
         return this.sendMessage(message.name());
     }
@@ -54,8 +70,16 @@ public class MessageSystem {
         return ifInitialized(() -> MessageParser.sendMessage(writer, message));
     }
 
+    public Either<String, String> getMessage() {
+        return ifInitialized(() -> MessageParser.getMessage(reader));
+    }
+
     public Either<String, String> getMessage(Message message) {
-        return ifInitialized(() -> MessageParser.getMessage(reader, message));
+        return ifInitialized(() -> MessageParser.getMessage(reader, message.name()));
+    }
+
+    public Either<String, String> getMessage(InboudMessage message) {
+        return ifInitialized(() -> MessageParser.getMessage(reader, message.name()));
     }
 
     private Either<String, String> ifInitialized(Supplier<Either<String, String>> supplier) {

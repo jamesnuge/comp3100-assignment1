@@ -15,14 +15,53 @@ public class MessageParser {
         HELO,
         OK,
         REDY,
-        JOBN
+        GETS,
+        SCHD,
+        CNTJ,
+        EJWT,
+        LSTJ,
+        PSHJ,
+        MIGJ,
+        KILJ,
+        TERM,
+        QUIT
     }
-    public static Either<String, String> getMessage(final BufferedReader reader, final Message message) {
+
+    public static enum InboudMessage {
+        OK,
+        DATA,
+        JOBN,
+        JOBP,
+        JCPL,
+        RESF,
+        RESR,
+        NONE,
+        QUIT
+    }
+
+    public static Either<String, String> getMessage(final BufferedReader reader) {
         return tryUntil(Duration.of(1, ChronoUnit.SECONDS), () -> {
             try {
                 if (reader.ready()) {
                     final String receivedMessage = reader.readLine();
-                    if (receivedMessage.startsWith(message.name())) {
+                    System.out.println(receivedMessage);
+                    return Option.some(receivedMessage);
+                } else {
+                    return Option.none();
+                }
+            } catch (IOException e) {
+                return Option.none();
+            }
+        });
+    }
+
+
+    public static Either<String, String> getMessage(final BufferedReader reader, final String message) {
+        return tryUntil(Duration.of(1, ChronoUnit.SECONDS), () -> {
+            try {
+                if (reader.ready()) {
+                    final String receivedMessage = reader.readLine();
+                    if (receivedMessage.startsWith(message)) {
                         System.out.println(receivedMessage);
                         return Option.some(receivedMessage);
                     } else {
@@ -40,6 +79,7 @@ public class MessageParser {
     public static Either<String, String> sendMessage(final PrintWriter writer, String message) {
         writer.println(message);
         writer.flush();
+        System.out.println("Sent message: " + message);
         return Either.right("Sent message");
     }
 

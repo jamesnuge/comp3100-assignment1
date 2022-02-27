@@ -4,6 +4,9 @@ import fj.data.Either;
 import java.util.List;
 import xyz.jamesnuge.MessageParser.Message;
 
+import static xyz.jamesnuge.MessageParser.InboudMessage.*;
+import static xyz.jamesnuge.MessageParser.Message.*;
+import static xyz.jamesnuge.MessageParser.Message.GETS;
 import static xyz.jamesnuge.MessageParser.Message.HELO;
 import static xyz.jamesnuge.Util.chain;
 
@@ -20,9 +23,20 @@ public class Main {
                             (s) -> messageSystem.getMessage(Message.OK)
                     )
             );
-        System.out.println(result);
         final SchedulingService schedulingService = new SchedulingService(System.getProperty("user.dir"));
         schedulingService.init();
-        // TODO: Load the ds-system.xml
+        chain(
+                messageSystem.sendMessage(REDY),
+                List.of(
+                        (s) -> messageSystem.getMessage(),
+                        (s) -> messageSystem.sendMessage(GETS),
+                        (s) -> messageSystem.getMessage(DATA),
+                        (s) -> {
+                            System.out.println(s);
+                            return Either.right(s);
+                        },
+                        (s) -> messageSystem.sendMessage(Message.QUIT)
+                )
+        );
     }
 }
