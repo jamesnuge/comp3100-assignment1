@@ -31,10 +31,7 @@ public class Main {
                         (s) -> messageSystem.getMessage(),
                         (s) -> messageSystem.sendMessage(GETS),
                         (s) -> messageSystem.getMessage(DATA),
-                        (s) -> {
-                            System.out.println(s);
-                            return Either.right(s);
-                        },
+                        Util::printString,
                         (s) -> messageSystem.sendMessage(Message.QUIT)
                 )
         );

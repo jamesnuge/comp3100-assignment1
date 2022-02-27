@@ -8,6 +8,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -53,6 +54,18 @@ public class Util {
         }
     }
 
+    public static Either<String, String> chain(final List<Function<String, Either<String, String>>> chains) {
+        if (chains.isEmpty()) {
+            return Either.left("Cannot chain with empty list of functions");
+        } else {
+            return chain(chains.get(0).apply(""), chains.subList(0, chains.size()));
+        }
+    }
+
+    public static Either<String, String> chain(Function<String, Either<String, String>> ...chains) {
+        return chain(Arrays.asList(chains));
+    }
+
     public static Either<String, String> chain(final Either<String, String> start, final List<Function<String, Either<String, String>>> chains) {
         if (start.isLeft()) {
             return start;
@@ -65,6 +78,11 @@ public class Util {
             }
         }
         return eitherToReturn;
+    }
+
+    public static Either<String, String> printString(String s) {
+        System.out.println(s);
+        return Either.right(s);
     }
 
 }

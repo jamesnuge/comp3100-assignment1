@@ -52,13 +52,11 @@ public class MessageSystem {
     }
 
     public Either<String, List<ServerStateItem>> getServerState() {
-        chain(
-                sendMessage(Message.GETS),
-                List.of(
-                        (s) -> getMessage(InboudMessage.DATA),
-                        (s) -> sendMessage(Message.OK),
-                        (s) -> getMessage()
-                )
+        return chain(
+                (s) -> sendMessage(Message.GETS),
+                (s) -> getMessage(InboudMessage.DATA),
+                (s) -> sendMessage(Message.OK),
+                (s) -> getMessage()
         ).rightMap(ServerState::parseServerStateFromString);
     }
 
