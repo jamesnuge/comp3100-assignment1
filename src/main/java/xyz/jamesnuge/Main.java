@@ -1,39 +1,40 @@
 package xyz.jamesnuge;
 
+import fj.Unit;
 import fj.data.Either;
-import java.util.List;
 import xyz.jamesnuge.MessageParser.Message;
+import xyz.jamesnuge.config.SystemConfig;
 
 import static xyz.jamesnuge.MessageParser.InboudMessage.*;
 import static xyz.jamesnuge.MessageParser.Message.*;
 import static xyz.jamesnuge.MessageParser.Message.GETS;
 import static xyz.jamesnuge.MessageParser.Message.HELO;
+import static xyz.jamesnuge.SocketClientSystemFactory.generateClientSystem;
 import static xyz.jamesnuge.Util.chain;
 
 
 public class Main {
     public static void main(String[] args) {
-        final MessageSystem messageSystem = new MessageSystem("127.0.0.1", 50000);
-            final Either<String, String> result = chain(
-                    messageSystem.init(),
-                    List.of(
-                            (s) -> messageSystem.sendMessage(HELO),
-                            (s) -> messageSystem.getMessage(Message.OK),
-                            (s) -> messageSystem.sendMessage("AUTH test"),
-                            (s) -> messageSystem.getMessage(Message.OK)
-                    )
-            );
-        final SchedulingService schedulingService = new SchedulingService(System.getProperty("user.dir"));
-        schedulingService.init();
-        chain(
-                messageSystem.sendMessage(REDY),
-                List.of(
-                        (s) -> messageSystem.getMessage(),
-                        (s) -> messageSystem.sendMessage(GETS),
-                        (s) -> messageSystem.getMessage(DATA),
-                        Util::printString,
-                        (s) -> messageSystem.sendMessage(Message.QUIT)
-                )
-        );
+        generateClientSystem("127.0.0.1", 50000)
+                .foreach((clientSystem -> {
+                    final Either<String, String> result = chain(
+                            (_s) -> clientSystem.sendMessage(HELO),
+                            (s) -> clientSystem.getMessage(Message.OK),
+                            (s) -> clientSystem.sendMessage("AUTH test"),
+                            (s) -> clientSystem.getMessage(Message.OK)
+                    );
+                    final Either<String, SystemConfig> systemConfig = SystemInformationUtil.loadSystemConfig(System.getProperty("user.dir"));
+                    chain(
+                            (_s) -> clientSystem.sendMessage(REDY),
+                            (s) -> clientSystem.getMessage(),
+                            (s) -> clientSystem.sendMessage("GETS All"),
+                            (s) -> clientSystem.getMessage(DATA),
+                            (s) -> clientSystem.sendMessage(Message.OK),
+                            (s) -> clientSystem.getMessage(),
+                            Util::printString,
+                            (s) -> clientSystem.sendMessage(Message.QUIT)
+                    );
+                    return Unit.unit();
+                }));
     }
 }

@@ -7,7 +7,13 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
+import static xyz.jamesnuge.Util.flatMap;
+import static xyz.jamesnuge.Util.match;
+import static xyz.jamesnuge.Util.toOption;
 import static xyz.jamesnuge.Util.tryUntil;
 
 public class MessageParser {
@@ -39,51 +45,29 @@ public class MessageParser {
         QUIT
     }
 
-    public static Either<String, String> getMessage(final BufferedReader reader) {
-        return tryUntil(Duration.of(1, ChronoUnit.SECONDS), () -> {
-            try {
-                if (reader.ready()) {
-                    final String receivedMessage = reader.readLine();
-                    System.out.println(receivedMessage);
-                    return Option.some(receivedMessage);
-                } else {
-                    return Option.none();
-                }
-            } catch (IOException e) {
-                return Option.none();
-            }
-        });
+    public static Either<String, String> getMessage(final Supplier<Either<String, String>> read) {
+        return getMessage(read, (s) -> true);
     }
 
-
-    public static Either<String, String> getMessage(final BufferedReader reader, final String message) {
-        return tryUntil(Duration.of(1, ChronoUnit.SECONDS), () -> {
-            try {
-                if (reader.ready()) {
-                    final String receivedMessage = reader.readLine();
-                    if (receivedMessage.startsWith(message)) {
-                        System.out.println(receivedMessage);
-                        return Option.some(receivedMessage);
-                    } else {
-                        return Option.none();
-                    }
-                } else {
-                    return Option.none();
-                }
-            } catch (IOException e) {
-                return Option.none();
-            }
-        });
+    public static Either<String, String> getMessage(final Supplier<Either<String, String>> read, final String matchingString) {
+        return getMessage(read, (s) -> s.contains(matchingString));
     }
 
-    public static Either<String, String> sendMessage(final PrintWriter writer, String message) {
-        writer.println(message);
-        writer.flush();
+    public static Either<String, String> getMessage(final Supplier<Either<String, String>> read, final Predicate<String> predicate) {
+        return tryUntil(Duration.of(1, ChronoUnit.SECONDS), () -> toOption(
+                flatMap(
+                        read.get(),
+                        match(predicate)
+                )
+        ));
+    }
+
+    public static Either<String, String> sendMessage(final Function<String, Either<String, String>> write, String message) {
         System.out.println("Sent message: " + message);
-        return Either.right("Sent message");
+        return write.apply(message);
     }
 
-    public static Either<String, String> sendMessage(final PrintWriter writer, Enum message) {
-        return sendMessage(writer, message.name());
+    public static Either<String, String> sendMessage(final Function<String, Either<String, String>> write, Message message) {
+        return sendMessage(write, message.name());
     }
 }
