@@ -49,6 +49,10 @@ public class Util {
         return chain(Arrays.asList(chains));
     }
 
+    @SafeVarargs public static Either<String, String> chain(final Either<String, String> original, final Function<String, Either<String, String>> ...chains) {
+        return chain(original, Arrays.asList(chains));
+    }
+
     public static Either<String, String> chain(
             final Either<String, String> start,
             final List<Function<String, Either<String, String>>> chains

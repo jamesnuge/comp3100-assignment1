@@ -1,6 +1,6 @@
 package xyz.jamesnuge.scheduling;
 
-import xyz.jamesnuge.ClientMessagingSystem;
+import xyz.jamesnuge.messaging.ClientMessagingSystem;
 
 public class SchedulingService {
 

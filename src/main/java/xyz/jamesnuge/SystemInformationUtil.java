@@ -16,7 +16,6 @@ public class SystemInformationUtil {
             JAXBContext jaxbContext = JAXBContext.newInstance(SystemConfig.class);
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
             SystemConfig sys = (SystemConfig) jaxbUnmarshaller.unmarshal(xmlFile);
-            System.out.println(sys);
             return Either.right(sys);
         } catch (final Exception e) {
             return Either.left(e.getMessage());

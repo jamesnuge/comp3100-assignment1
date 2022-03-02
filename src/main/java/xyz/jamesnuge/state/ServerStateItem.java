@@ -33,7 +33,7 @@ public class ServerStateItem {
     private final Integer waitingJobs;
     private final Integer runningJobs;
 
-    protected ServerStateItem(
+public ServerStateItem(
             final String type,
             final Integer id,
             final ServerStatus stats,
@@ -102,5 +102,20 @@ public class ServerStateItem {
     @Override
     public int hashCode() {
         return Objects.hash(type, id, stats, currentStartTime, core, memory, disk, waitingJobs, runningJobs);
+    }
+
+    @Override
+    public String toString() {
+        return "ServerStateItem{" +
+                "type='" + type + '\'' +
+                ", id=" + id +
+                ", stats=" + stats +
+                ", currentStartTime=" + currentStartTime +
+                ", core=" + core +
+                ", memory=" + memory +
+                ", disk=" + disk +
+                ", waitingJobs=" + waitingJobs +
+                ", runningJobs=" + runningJobs +
+                '}';
     }
 }

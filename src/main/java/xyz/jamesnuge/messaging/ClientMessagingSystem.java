@@ -1,14 +1,16 @@
-package xyz.jamesnuge;
+package xyz.jamesnuge.messaging;
 
 import fj.data.Either;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import xyz.jamesnuge.MessageParser;
 import xyz.jamesnuge.MessageParser.InboudMessage;
 import xyz.jamesnuge.MessageParser.Message;
 import xyz.jamesnuge.state.ServerState;
 import xyz.jamesnuge.state.ServerStateItem;
 
+import static xyz.jamesnuge.MessageParser.Message.HELO;
 import static xyz.jamesnuge.Util.chain;
 
 public class ClientMessagingSystem {
@@ -16,14 +18,14 @@ public class ClientMessagingSystem {
     private final Function<String, Either<String, String>> write;
     private final Supplier<Either<String, String>> read;
 
-    ClientMessagingSystem(final Function<String, Either<String, String>> write, final Supplier<Either<String, String>> read) {
+    public ClientMessagingSystem(final Function<String, Either<String, String>> write, final Supplier<Either<String, String>> read) {
         this.write = write;
         this.read = read;
     }
 
-    public Either<String, List<ServerStateItem>> getServerState(String serverType) {
+    public Either<String, List<ServerStateItem>> getServerState(ConfigRequest configRequest) {
         return chain(
-                (s) -> sendMessage(Message.GETS.name() + " " + serverType),
+                (s) -> sendMessage(configRequest.constructServerMessage()),
                 (s) -> getMessage(InboudMessage.DATA),
                 (s) -> sendMessage(Message.OK),
                 (s) -> getMessage()
@@ -31,7 +33,16 @@ public class ClientMessagingSystem {
     }
 
     public Either<String, List<ServerStateItem>> getServerState() {
-        return getServerState("All");
+        return getServerState(ConfigRequest.WHOLE_SYSTEM_REQUEST);
+    }
+
+    public Either<String, String> loginToServer(String userName) {
+        return chain(
+                (_s) -> sendMessage(HELO),
+                (s) -> getMessage(Message.OK),
+                (s) -> sendMessage("AUTH " + userName),
+                (s) -> getMessage(Message.OK)
+        );
     }
 
     public Either<String, String> sendMessage(Message message) {

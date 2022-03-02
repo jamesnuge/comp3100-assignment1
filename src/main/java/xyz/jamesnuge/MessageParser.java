@@ -1,10 +1,6 @@
 package xyz.jamesnuge;
 
 import fj.data.Either;
-import fj.data.Option;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.function.Function;
