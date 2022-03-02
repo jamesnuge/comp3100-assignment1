@@ -21,13 +21,17 @@ public class ClientMessagingSystem {
         this.read = read;
     }
 
-    public Either<String, List<ServerStateItem>> getServerState() {
+    public Either<String, List<ServerStateItem>> getServerState(String serverType) {
         return chain(
-                (s) -> sendMessage(Message.GETS),
+                (s) -> sendMessage(Message.GETS.name() + " " + serverType),
                 (s) -> getMessage(InboudMessage.DATA),
                 (s) -> sendMessage(Message.OK),
                 (s) -> getMessage()
         ).rightMap(ServerState::parseServerStateFromString);
+    }
+
+    public Either<String, List<ServerStateItem>> getServerState() {
+        return getServerState("All");
     }
 
     public Either<String, String> sendMessage(Message message) {
