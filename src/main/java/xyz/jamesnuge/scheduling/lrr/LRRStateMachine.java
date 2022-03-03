@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.BiFunction;
 import xyz.jamesnuge.MessageParser;
+import xyz.jamesnuge.Pair;
 import xyz.jamesnuge.messaging.ClientMessagingService;
 import xyz.jamesnuge.scheduling.StateMachine;
 import xyz.jamesnuge.state.ServerStateItem;
@@ -33,12 +34,10 @@ public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
     @Override
     public void accept(String trigger) {
         if (trigger.contains(MessageParser.InboudMessage.JOBN.name())) {
-            this.currentState = currentState.rightMap((state) -> {
-                final Integer serverToAssignTo = state.getLastAssignedServerId() + 1;
-                final Integer numberOfServers = state.getNumberOfServers();
+            this.currentState = getNextServerId().rightMap((state) -> {
                 final List<String> params = Arrays.asList(trigger.substring(5).split(" "));
-                clientMessagingService.scheduleJob(Integer.valueOf(params.get(1)), largestServerType, currentState.right().value().getLastAssignedServerId() + 1);
-                return generateState.apply(serverToAssignTo, numberOfServers);
+                clientMessagingService.scheduleJob(Integer.valueOf(params.get(1)), largestServerType, state.getLeft());
+                return generateState.apply(state.getLeft(), state.getRight());
             });
         }
     }
@@ -50,5 +49,9 @@ public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
     @Override
     public Either<String, LRRInternalState> getCurrentState() {
         return currentState;
+    }
+
+    private Either<String, Pair<Integer, Integer>> getNextServerId() {
+        return currentState.rightMap((state) -> new Pair<>((state.getLastAssignedServerId() + 1) % state.getNumberOfServers(), state.getNumberOfServers()));
     }
 }

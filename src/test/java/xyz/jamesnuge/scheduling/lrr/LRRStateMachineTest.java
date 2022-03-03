@@ -68,10 +68,31 @@ class LRRStateMachineTest {
         final StateMachine<LRRInternalState, String> stateMachine = new LRRStateMachine(cms);
         stateMachine.accept("JOBN 2142 12 750 4 250 800");
         assertRight(
-                LRRInternalState.createFinalInternalStateFactory("type").apply(0, 2),
+                LRRInternalState.createInternalStateFactory("type").apply(0, 2),
                 stateMachine.getCurrentState()
         );
         verify(cms).scheduleJob(eq(12), eq("type"), eq(0));
+    }
+
+    @Test
+    public void testStateMachineLoopsBackOnceAllServersHaveBeenAssignedAJob() {
+        final List<ServerStateItem> config = Arrays.asList(
+                generateServerStateItem("type", 1),
+                generateServerStateItem("type", 2)
+        );
+        when(cms.getServerState()).thenReturn(right(config));
+        when(cms.scheduleJob(any(), any(), any())).thenReturn(right("write"));
+        final StateMachine<LRRInternalState, String> stateMachine = new LRRStateMachine(cms);
+        stateMachine.accept("JOBN 2142 12 750 4 250 800");
+        stateMachine.accept("JOBN 2142 13 750 4 250 800");
+        stateMachine.accept("JOBN 2142 14 750 4 250 800");
+        assertRight(
+                LRRInternalState.createInternalStateFactory("type").apply(0, 2),
+                stateMachine.getCurrentState()
+        );
+        verify(cms).scheduleJob(eq(12), eq("type"), eq(0));
+        verify(cms).scheduleJob(eq(13), eq("type"), eq(1));
+        verify(cms).scheduleJob(eq(14), eq("type"), eq(0));
     }
 
 }
