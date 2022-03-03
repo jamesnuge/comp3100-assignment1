@@ -27,7 +27,7 @@ public class ServerStateItem {
     private final Integer id;
     private final ServerStatus stats;
     private final Long currentStartTime;
-    private final Integer core;
+    private final Integer cores;
     private final Long memory;
     private final Long disk;
     private final Integer waitingJobs;
@@ -38,7 +38,7 @@ public ServerStateItem(
             final Integer id,
             final ServerStatus stats,
             final Long currentStartTime,
-            final Integer core,
+            final Integer cores,
             final Long memory,
             final Long disk,
             final Integer waitingJobs,
@@ -48,7 +48,7 @@ public ServerStateItem(
         this.id = id;
         this.stats = stats;
         this.currentStartTime = currentStartTime;
-        this.core = core;
+        this.cores = cores;
         this.memory = memory;
         this.disk = disk;
         this.waitingJobs = waitingJobs;
@@ -71,8 +71,8 @@ public ServerStateItem(
         return currentStartTime;
     }
 
-    public Integer getCore() {
-        return core;
+    public Integer getCores() {
+        return cores;
     }
 
     public Long getMemory() {
@@ -96,12 +96,12 @@ public ServerStateItem(
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ServerStateItem that = (ServerStateItem) o;
-        return Objects.equals(type, that.type) && Objects.equals(id, that.id) && stats == that.stats && Objects.equals(currentStartTime, that.currentStartTime) && Objects.equals(core, that.core) && Objects.equals(memory, that.memory) && Objects.equals(disk, that.disk) && Objects.equals(waitingJobs, that.waitingJobs) && Objects.equals(runningJobs, that.runningJobs);
+        return Objects.equals(type, that.type) && Objects.equals(id, that.id) && stats == that.stats && Objects.equals(currentStartTime, that.currentStartTime) && Objects.equals(cores, that.cores) && Objects.equals(memory, that.memory) && Objects.equals(disk, that.disk) && Objects.equals(waitingJobs, that.waitingJobs) && Objects.equals(runningJobs, that.runningJobs);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, id, stats, currentStartTime, core, memory, disk, waitingJobs, runningJobs);
+        return Objects.hash(type, id, stats, currentStartTime, cores, memory, disk, waitingJobs, runningJobs);
     }
 
     @Override
@@ -111,7 +111,7 @@ public ServerStateItem(
                 ", id=" + id +
                 ", stats=" + stats +
                 ", currentStartTime=" + currentStartTime +
-                ", core=" + core +
+                ", core=" + cores +
                 ", memory=" + memory +
                 ", disk=" + disk +
                 ", waitingJobs=" + waitingJobs +

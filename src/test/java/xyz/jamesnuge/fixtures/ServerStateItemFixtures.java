@@ -28,7 +28,7 @@ public class ServerStateItemFixtures {
                 item.getId() + " " +
                 item.getStats() + " " +
                 item.getCurrentStartTime() + " " +
-                item.getCore() + " " +
+                item.getCores() + " " +
                 item.getMemory() + " " +
                 item.getDisk() + " " +
                 item.getWaitingJobs() + " " +
