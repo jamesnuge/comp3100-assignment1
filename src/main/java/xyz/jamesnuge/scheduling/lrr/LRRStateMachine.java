@@ -31,9 +31,9 @@ public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
 
 
     @Override
-    public Either<String, LRRInternalState> accept(String trigger) {
+    public void accept(String trigger) {
         if (trigger.contains(MessageParser.InboudMessage.JOBN.name())) {
-            return currentState.rightMap((state) -> {
+            this.currentState = currentState.rightMap((state) -> {
                 final Integer serverToAssignTo = state.getLastAssignedServerId() + 1;
                 final Integer numberOfServers = state.getNumberOfServers();
                 final List<String> params = Arrays.asList(trigger.substring(5).split(" "));
@@ -41,7 +41,6 @@ public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
                 return generateState.apply(serverToAssignTo, numberOfServers);
             });
         }
-        return currentState;
     }
 
     private static String getHighestCapacityServerType(final List<ServerStateItem> config) {
