@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import xyz.jamesnuge.state.ServerStateItem;
 
@@ -19,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static xyz.jamesnuge.state.ServerStateItem.ServerStatus.INACTIVE;
 
@@ -56,19 +58,27 @@ class ClientMessagingSystemTest {
     public void testGetServerStateForAllComputers() {
         final InOrder inOrder = inOrder(writeMock, readMock);
         final ServerStateItem generatedState = generateServerStateItem(1);
-        final Either<String, List<ServerStateItem>> serverState = clientMessagingSystem.getServerState();
         when(readMock.get()).thenReturn(
                 right("DATA"),
                 right(createServerStateString(generatedState))
         );
+        final Either<String, List<ServerStateItem>> serverState = clientMessagingSystem.getServerState();
         inOrder.verify(writeMock).apply(eq("GETS All"));
         inOrder.verify(readMock).get();
         inOrder.verify(writeMock).apply("OK");
         inOrder.verify(readMock).get();
         assertRight(
-                Arrays.asList(generatedState),
+                List.of(generatedState),
                 serverState
         );
+    }
+
+    @Test
+    public void testScheduleJobSendsMessage() {
+        when(writeMock.apply(any())).thenReturn(right("mockResult"));
+        final Either<String, String> writeResult = clientMessagingSystem.scheduleJob(1, "test", 4);
+        verify(writeMock).apply("SCHD 1 test 4");
+        assertRight("mockResult", writeResult);
     }
 
     public static <A, B> void  assertRight(B expected, Either<A, B> actual) {
@@ -103,6 +113,7 @@ class ClientMessagingSystemTest {
                 item.getCurrentStartTime() + " " +
                 item.getCore() + " " +
                 item.getMemory() + " " +
+                item.getDisk() + " " +
                 item.getWaitingJobs() + " " +
                 item.getRunningJobs();
     }

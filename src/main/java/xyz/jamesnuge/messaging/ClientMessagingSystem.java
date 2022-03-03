@@ -11,6 +11,7 @@ import xyz.jamesnuge.state.ServerState;
 import xyz.jamesnuge.state.ServerStateItem;
 
 import static xyz.jamesnuge.MessageParser.Message.HELO;
+import static xyz.jamesnuge.MessageParser.Message.SCHD;
 import static xyz.jamesnuge.Util.chain;
 
 public class ClientMessagingSystem {
@@ -65,4 +66,7 @@ public class ClientMessagingSystem {
         return MessageParser.getMessage(read, message.name());
     }
 
+    public Either<String, String> scheduleJob(Integer jobId, String serverType, Integer serverId) {
+        return sendMessage(SCHD.name() + " " + jobId + " " + serverType + " " + serverId);
+    }
 }
