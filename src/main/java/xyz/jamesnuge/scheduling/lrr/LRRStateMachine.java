@@ -31,15 +31,17 @@ public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
 
 
     @Override
-    public LRRInternalState accept(String trigger) {
+    public Either<String, LRRInternalState> accept(String trigger) {
         if (trigger.contains(MessageParser.InboudMessage.JOBN.name())) {
-            final Integer serverToAssignTo = currentState.right().value().getLastAssignedServerId() + 1;
-            final Integer numberOfServers = currentState.right().value().getNumberOfServers();
-            final List<String> params = Arrays.asList(trigger.substring(5).split(" "));
-            clientMessagingService.scheduleJob(Integer.valueOf(params.get(1)), largestServerType, currentState.right().value().getLastAssignedServerId() + 1);
-            return generateState.apply(serverToAssignTo, numberOfServers);
+            return currentState.rightMap((state) -> {
+                final Integer serverToAssignTo = state.getLastAssignedServerId() + 1;
+                final Integer numberOfServers = state.getNumberOfServers();
+                final List<String> params = Arrays.asList(trigger.substring(5).split(" "));
+                clientMessagingService.scheduleJob(Integer.valueOf(params.get(1)), largestServerType, currentState.right().value().getLastAssignedServerId() + 1);
+                return generateState.apply(serverToAssignTo, numberOfServers);
+            });
         }
-        return currentState.right().value();
+        return currentState;
     }
 
     private static String getHighestCapacityServerType(final List<ServerStateItem> config) {

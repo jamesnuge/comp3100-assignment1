@@ -11,7 +11,6 @@ import xyz.jamesnuge.scheduling.StateMachine;
 import xyz.jamesnuge.state.ServerStateItem;
 
 import static fj.data.Either.right;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -51,9 +50,9 @@ class LRRStateMachineTest {
         when(cms.getServerState()).thenReturn(right(config));
         when(cms.scheduleJob(any(), any(), any())).thenReturn(right("write"));
         final StateMachine<LRRInternalState, String> stateMachine = new LRRStateMachine(cms);
-        assertEquals(
-                stateMachine.accept("alkdfjsldjfsadjf"),
-                LRRInternalState.createInternalStateFactory("type").apply(-1, 2)
+        assertRight(
+                LRRInternalState.createInternalStateFactory("type").apply(-1, 2),
+                stateMachine.accept("alkdfjsldjfsadjf")
         );
     }
 
@@ -66,7 +65,7 @@ class LRRStateMachineTest {
             when(cms.getServerState()).thenReturn(right(config));
             when(cms.scheduleJob(any(), any(), any())).thenReturn(right("write"));
             final StateMachine<LRRInternalState, String> stateMachine = new LRRStateMachine(cms);
-            assertEquals(
+            assertRight(
                     LRRInternalState.createFinalInternalStateFactory("type").apply(0, 2),
                     stateMachine.accept("JOBN 2142 12 750 4 250 800")
             );
