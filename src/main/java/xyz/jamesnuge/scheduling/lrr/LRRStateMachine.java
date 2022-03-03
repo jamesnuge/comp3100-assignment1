@@ -1,9 +1,11 @@
 package xyz.jamesnuge.scheduling.lrr;
 
 import fj.data.Either;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.BiFunction;
+import xyz.jamesnuge.MessageParser;
 import xyz.jamesnuge.messaging.ClientMessagingService;
 import xyz.jamesnuge.scheduling.StateMachine;
 import xyz.jamesnuge.state.ServerStateItem;
@@ -12,24 +14,32 @@ public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
 
     private final String largestServerType;
     private final ClientMessagingService clientMessagingService;
-    private final BiFunction<Long, Integer, LRRInternalState> generateState;
-    private final BiFunction<Long, Integer, LRRInternalState> generateFinalState;
+    private final BiFunction<Integer, Integer, LRRInternalState> generateState;
+    private final BiFunction<Integer, Integer, LRRInternalState> generateFinalState;
     private Either<String, LRRInternalState> currentState;
 
-    public LRRStateMachine(ClientMessagingService clientMessagingService, final List<ServerStateItem> config) {
-        this.largestServerType = getHighestCapacityServerType(config);
+    public LRRStateMachine(ClientMessagingService clientMessagingService) {
+        Either<String, List<ServerStateItem>> serverState = clientMessagingService.getServerState();
+        this.largestServerType = getHighestCapacityServerType(serverState.right().value());
         this.generateState = LRRInternalState.createInternalStateFactory(largestServerType);
         this.generateFinalState = LRRInternalState.createInternalStateFactory(largestServerType);
         this.clientMessagingService = clientMessagingService;
-        this.currentState = clientMessagingService.getServerState()
+        this.currentState = serverState
                 .rightMap((s) -> s.stream().filter((item) -> item.getType().equals(largestServerType)).count())
-                .rightMap((s) -> this.generateState.apply(0L, s.intValue()));
+                .rightMap((s) -> this.generateState.apply(-1, s.intValue()));
     }
 
 
     @Override
     public LRRInternalState accept(String trigger) {
-        return null;
+        if (trigger.contains(MessageParser.InboudMessage.JOBN.name())) {
+            final Integer serverToAssignTo = currentState.right().value().getLastAssignedServerId() + 1;
+            final Integer numberOfServers = currentState.right().value().getNumberOfServers();
+            final List<String> params = Arrays.asList(trigger.substring(5).split(" "));
+            clientMessagingService.scheduleJob(Integer.valueOf(params.get(1)), largestServerType, currentState.right().value().getLastAssignedServerId() + 1);
+            return generateState.apply(serverToAssignTo, numberOfServers);
+        }
+        return currentState.right().value();
     }
 
     private static String getHighestCapacityServerType(final List<ServerStateItem> config) {

@@ -10,8 +10,12 @@ public class ServerStateItemFixtures {
     public static final ServerStateItem SERVER_STATE_ITEM = generateServerStateItem(1);
 
     public static ServerStateItem generateServerStateItem(Integer id) {
+        return generateServerStateItem("type" + id, id);
+    }
+
+    public static ServerStateItem generateServerStateItem(String type, Integer id) {
         return new ServerStateItem(
-                "type",
+                type,
                 id,
                 INACTIVE,
                 -1L,

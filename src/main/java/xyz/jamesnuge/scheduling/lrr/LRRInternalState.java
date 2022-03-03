@@ -6,28 +6,28 @@ import xyz.jamesnuge.scheduling.State;
 
 public class LRRInternalState implements State {
 
-    private final Long lastAssignedServerId;
+    private final Integer lastAssignedServerId;
     private final String serverType;
     private final Integer numberOfServers;
     private final Boolean isFinalState;
 
-    public static BiFunction<Long, Integer, LRRInternalState> createInternalStateFactory(String serverType) {
-        return (Long id, Integer numberOfServers) -> new LRRInternalState(id, serverType, numberOfServers, false);
+    public static BiFunction<Integer, Integer, LRRInternalState> createInternalStateFactory(String serverType) {
+        return (Integer id, Integer numberOfServers) -> new LRRInternalState(id, serverType, numberOfServers, false);
     }
 
-    public static BiFunction<Long, Integer, LRRInternalState> createFinalInternalStateFactory(String serverType) {
-        return (Long id, Integer numberOfServers) -> new LRRInternalState(id, serverType, numberOfServers, true);
+    public static BiFunction<Integer, Integer, LRRInternalState> createFinalInternalStateFactory(String serverType) {
+        return (Integer id, Integer numberOfServers) -> new LRRInternalState(id, serverType, numberOfServers, true);
     }
 
 
-    private LRRInternalState(Long lastAssignedServerId, String serverType, Integer numberOfServers, Boolean isFinalState) {
+    private LRRInternalState(Integer lastAssignedServerId, String serverType, Integer numberOfServers, Boolean isFinalState) {
         this.lastAssignedServerId = lastAssignedServerId;
         this.serverType = serverType;
         this.numberOfServers = numberOfServers;
         this.isFinalState = isFinalState;
     }
 
-    public Long getLastAssignedServerId() {
+    public Integer getLastAssignedServerId() {
         return lastAssignedServerId;
     }
 

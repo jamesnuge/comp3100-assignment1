@@ -57,7 +57,7 @@ public class Server {
     @XmlAttribute(name = "hourlyRate")
     protected Float hourlyRate;
     @XmlAttribute(name = "cores")
-    protected Byte cores;
+    protected Integer cores;
     @XmlAttribute(name = "memory")
     protected Integer memory;
     @XmlAttribute(name = "disk")
@@ -191,7 +191,7 @@ public class Server {
      *     {@link Byte }
      *     
      */
-    public Byte getCores() {
+    public Integer getCores() {
         return cores;
     }
 
@@ -203,7 +203,7 @@ public class Server {
      *     {@link Byte }
      *     
      */
-    public void setCores(Byte value) {
+    public void setCores(Integer value) {
         this.cores = value;
     }
 
