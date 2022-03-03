@@ -11,6 +11,8 @@ import xyz.jamesnuge.state.ServerState;
 import xyz.jamesnuge.state.ServerStateItem;
 
 import static xyz.jamesnuge.MessageParser.Message.HELO;
+import static xyz.jamesnuge.MessageParser.Message.PSHJ;
+import static xyz.jamesnuge.MessageParser.Message.REDY;
 import static xyz.jamesnuge.MessageParser.Message.SCHD;
 import static xyz.jamesnuge.Util.chain;
 
@@ -46,6 +48,18 @@ public class ClientMessagingSystem {
         );
     }
 
+    public Either<String, String> beginScheduling() {
+        return sendMessage(REDY);
+    }
+
+    public Either<String, String> scheduleJob(Integer jobId, String serverType, Integer serverId) {
+        return sendMessage(SCHD.name() + " " + jobId + " " + serverType + " " + serverId);
+    }
+
+    public Either<String, String> pushJob() {
+        return sendMessage(PSHJ);
+    }
+
     public Either<String, String> sendMessage(Message message) {
         return this.sendMessage(message.name());
     }
@@ -66,7 +80,4 @@ public class ClientMessagingSystem {
         return MessageParser.getMessage(read, message.name());
     }
 
-    public Either<String, String> scheduleJob(Integer jobId, String serverType, Integer serverId) {
-        return sendMessage(SCHD.name() + " " + jobId + " " + serverType + " " + serverId);
-    }
 }

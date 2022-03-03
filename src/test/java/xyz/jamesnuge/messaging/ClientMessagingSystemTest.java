@@ -1,7 +1,6 @@
 package xyz.jamesnuge.messaging;
 
 import fj.data.Either;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -10,19 +9,18 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import xyz.jamesnuge.state.ServerStateItem;
 
 import static fj.data.Either.right;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static xyz.jamesnuge.state.ServerStateItem.ServerStatus.INACTIVE;
+import static xyz.jamesnuge.fixtures.ServerStateItemFixtures.SERVER_STATE_ITEM;
+import static xyz.jamesnuge.fixtures.ServerStateItemFixtures.createServerStateString;
+import static xyz.jamesnuge.util.TestUtil.assertRight;
 
 class ClientMessagingSystemTest {
 
@@ -57,7 +55,7 @@ class ClientMessagingSystemTest {
     @Test
     public void testGetServerStateForAllComputers() {
         final InOrder inOrder = inOrder(writeMock, readMock);
-        final ServerStateItem generatedState = generateServerStateItem(1);
+        final ServerStateItem generatedState = SERVER_STATE_ITEM;
         when(readMock.get()).thenReturn(
                 right("DATA"),
                 right(createServerStateString(generatedState))
@@ -75,47 +73,30 @@ class ClientMessagingSystemTest {
 
     @Test
     public void testScheduleJobSendsMessage() {
-        when(writeMock.apply(any())).thenReturn(right("mockResult"));
         final Either<String, String> writeResult = clientMessagingSystem.scheduleJob(1, "test", 4);
         verify(writeMock).apply("SCHD 1 test 4");
-        assertRight("mockResult", writeResult);
+        assertRight("write", writeResult);
     }
 
-    public static <A, B> void  assertRight(B expected, Either<A, B> actual) {
-        if (actual.isLeft()) {
-            fail("Either had a left value: " + actual.left().value());
-        } else {
-            assertEquals(
-                    expected,
-                    actual.right().value()
-            );
-        }
-    }
 
-    public static ServerStateItem generateServerStateItem(Integer id) {
-        return new ServerStateItem(
-                "type",
-                id,
-                INACTIVE,
-                -1L,
-                id,
-                id.longValue(),
-                id.longValue(),
-                id,
-                id
+    @Test
+    public void testBeginSchedulingSendsRedyMessageAndReceivesOK() {
+        final Either<String, String> schedulingResult = clientMessagingSystem.beginScheduling();
+        verify(writeMock).apply(eq("REDY"));
+        assertRight(
+                "write",
+                schedulingResult
         );
     }
 
-    public static String createServerStateString(ServerStateItem item) {
-        return item.getType() + " " +
-                item.getId() + " " +
-                item.getStats() + " " +
-                item.getCurrentStartTime() + " " +
-                item.getCore() + " " +
-                item.getMemory() + " " +
-                item.getDisk() + " " +
-                item.getWaitingJobs() + " " +
-                item.getRunningJobs();
+    @Test
+    public void testPushJobSendsMessage() {
+        final Either<String, String> schedulingResult = clientMessagingSystem.pushJob();
+        verify(writeMock).apply(eq("PSHJ"));
+        assertRight(
+                "write",
+                schedulingResult
+        );
     }
 
 }

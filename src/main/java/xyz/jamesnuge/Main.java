@@ -7,7 +7,6 @@ import xyz.jamesnuge.messaging.ClientMessagingSystem;
 
 import static xyz.jamesnuge.MessageParser.Message.REDY;
 import static xyz.jamesnuge.SocketClientSystemFactory.generateClientSystem;
-import static xyz.jamesnuge.SystemInformationUtil.loadSystemConfig;
 import static xyz.jamesnuge.Util.chain;
 
 public class Main {
@@ -20,8 +19,6 @@ public class Main {
                                 clientSystem.loginToServer("test"),
                                 (_s) -> clientSystem.sendMessage(REDY),
                                 (s) -> clientSystem.getMessage(),
-//                                (_s) -> loadSystemConfig(System.getProperty("user.dir")).rightMap(Object::toString),
-//                                Util::printString,
                                 (_s) -> clientSystem.getServerState().rightMap(Object::toString),
                                 Util::printString,
                                 (s) -> clientSystem.sendMessage(Message.QUIT)
