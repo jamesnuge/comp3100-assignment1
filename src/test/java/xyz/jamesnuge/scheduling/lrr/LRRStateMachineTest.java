@@ -11,6 +11,7 @@ import xyz.jamesnuge.scheduling.StateMachine;
 import xyz.jamesnuge.state.ServerStateItem;
 
 import static fj.data.Either.right;
+import static java.util.Collections.emptyList;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -30,19 +31,19 @@ class LRRStateMachineTest {
     }
 
     @Test
-    public void testStateMachineConstructsWithCorrectInitialState() {
+    public void testStateMachineConstructsWithCorrectInitialState() throws Exception {
         final List<ServerStateItem> config = List.of(SERVER_STATE_ITEM);
         when(cms.getServerState()).thenReturn(right(config));
         final StateMachine<LRRInternalState, String> stateMachine = new LRRStateMachine(cms);
         assertRight(
-                LRRInternalState.createInternalStateFactory("type1").apply(-1, 1),
+                LRRInternalState.createInternalStateFactory("type1").f(-1, 1, emptyList()),
                 stateMachine.getCurrentState()
         );
         verify(cms).getServerState();
     }
 
     @Test
-    public void shouldPerformNoopIfTriggerUnknown() {
+    public void shouldPerformNoopIfTriggerUnknown() throws Exception {
         final List<ServerStateItem> config = Arrays.asList(
                 generateServerStateItem("type", 1),
                 generateServerStateItem("type", 2)
@@ -52,13 +53,13 @@ class LRRStateMachineTest {
         final StateMachine<LRRInternalState, String> stateMachine = new LRRStateMachine(cms);
         stateMachine.accept("alkdfjsldjfsadjf");
         assertRight(
-                LRRInternalState.createInternalStateFactory("type").apply(-1, 2),
+                LRRInternalState.createInternalStateFactory("type").f(-1, 2, emptyList()),
                 stateMachine.getCurrentState()
         );
     }
 
     @Test
-    public void testStateMachineAssignsJobToTheNextAvailableMachine() {
+    public void testStateMachineAssignsJobToTheNextAvailableMachine() throws Exception {
         final List<ServerStateItem> config = Arrays.asList(
                 generateServerStateItem("type", 1),
                 generateServerStateItem("type", 2)
@@ -68,14 +69,14 @@ class LRRStateMachineTest {
         final StateMachine<LRRInternalState, String> stateMachine = new LRRStateMachine(cms);
         stateMachine.accept("JOBN 2142 12 750 4 250 800");
         assertRight(
-                LRRInternalState.createInternalStateFactory("type").apply(0, 2),
+                LRRInternalState.createInternalStateFactory("type").f(0, 2, emptyList()),
                 stateMachine.getCurrentState()
         );
         verify(cms).scheduleJob(eq(12), eq("type"), eq(0));
     }
 
     @Test
-    public void testStateMachineLoopsBackOnceAllServersHaveBeenAssignedAJob() {
+    public void testStateMachineLoopsBackOnceAllServersHaveBeenAssignedAJob() throws Exception {
         final List<ServerStateItem> config = Arrays.asList(
                 generateServerStateItem("type", 1),
                 generateServerStateItem("type", 2)
@@ -87,12 +88,30 @@ class LRRStateMachineTest {
         stateMachine.accept("JOBN 2142 13 750 4 250 800");
         stateMachine.accept("JOBN 2142 14 750 4 250 800");
         assertRight(
-                LRRInternalState.createInternalStateFactory("type").apply(0, 2),
+                LRRInternalState.createInternalStateFactory("type").f(0, 2, emptyList()),
                 stateMachine.getCurrentState()
         );
         verify(cms).scheduleJob(eq(12), eq("type"), eq(0));
         verify(cms).scheduleJob(eq(13), eq("type"), eq(1));
         verify(cms).scheduleJob(eq(14), eq("type"), eq(0));
+    }
+
+    @Test
+    public void testStateMachineShouldAddServerToUnavailableList() throws Exception {
+        final List<ServerStateItem> config = Arrays.asList(
+                generateServerStateItem("type", 1),
+                generateServerStateItem("type", 2),
+                generateServerStateItem("type", 3)
+        );
+        when(cms.getServerState()).thenReturn(right(config));
+        when(cms.scheduleJob(any(), any(), any())).thenReturn(right("write"));
+        final StateMachine<LRRInternalState, String> stateMachine = new LRRStateMachine(cms);
+        stateMachine.accept("RESF type 0 12");
+        stateMachine.accept("JOBN 2142 12 750 4 250 800");
+        assertRight(
+                LRRInternalState.createInternalStateFactory("type").f(0, 3, emptyList()),
+                stateMachine.getCurrentState()
+        );
     }
 
 }

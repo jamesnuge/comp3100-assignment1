@@ -1,5 +1,6 @@
 package xyz.jamesnuge.scheduling.lrr;
 
+import fj.function.Try3;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
@@ -15,12 +16,12 @@ public class LRRInternalState implements State {
     private final List<Integer> unavailableServers;
     private final Boolean isFinalState;
 
-    public static BiFunction<Integer, Integer, LRRInternalState> createInternalStateFactory(String serverType) {
-        return (Integer id, Integer numberOfServers) -> new LRRInternalState(id, serverType, numberOfServers, emptyList(), false);
+    public static Try3<Integer, Integer, List<Integer>, LRRInternalState, Exception> createInternalStateFactory(String serverType) {
+        return (Integer id, Integer numberOfServers, List<Integer> unavailable) -> new LRRInternalState(id, serverType, numberOfServers, unavailable, false);
     }
 
-    public static BiFunction<Integer, Integer, LRRInternalState> createFinalInternalStateFactory(String serverType) {
-        return (Integer id, Integer numberOfServers) -> new LRRInternalState(id, serverType, numberOfServers, emptyList(), true);
+    public static Try3<Integer, Integer, List<Integer>, LRRInternalState, Exception> createFinalInternalStateFactory(String serverType) {
+        return (Integer id, Integer numberOfServers, List<Integer> list) -> new LRRInternalState(id, serverType, numberOfServers, list, true);
     }
 
 

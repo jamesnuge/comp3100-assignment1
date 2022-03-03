@@ -1,22 +1,25 @@
 package xyz.jamesnuge.scheduling.lrr;
 
 import fj.data.Either;
+import fj.function.Try3;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.BiFunction;
 import xyz.jamesnuge.MessageParser;
 import xyz.jamesnuge.Pair;
 import xyz.jamesnuge.messaging.ClientMessagingService;
 import xyz.jamesnuge.scheduling.StateMachine;
 import xyz.jamesnuge.state.ServerStateItem;
 
+import static fj.data.Either.left;
+import static java.util.Collections.emptyList;
+
 public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
 
     private final String largestServerType;
     private final ClientMessagingService clientMessagingService;
-    private final BiFunction<Integer, Integer, LRRInternalState> generateState;
-    private final BiFunction<Integer, Integer, LRRInternalState> generateFinalState;
+    private final Try3<Integer, Integer, List<Integer>, LRRInternalState, Exception> generateState;
+    private final Try3<Integer, Integer, List<Integer>, LRRInternalState, Exception> generateFinalState;
     private Either<String, LRRInternalState> currentState;
 
     public LRRStateMachine(ClientMessagingService clientMessagingService) {
@@ -27,7 +30,14 @@ public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
         this.clientMessagingService = clientMessagingService;
         this.currentState = serverState
                 .rightMap((s) -> s.stream().filter((item) -> item.getType().equals(largestServerType)).count())
-                .rightMap((s) -> this.generateState.apply(-1, s.intValue()));
+                .rightMap((s) -> {
+                    try {
+                        return this.generateState.f(-1, s.intValue(), emptyList());
+                    } catch (Exception e) {
+                        // TODO: Fix this to return left of the error message
+                        return null;
+                    }
+                });
     }
 
 
@@ -37,7 +47,12 @@ public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
             this.currentState = getNextServerId().rightMap((state) -> {
                 final List<String> params = Arrays.asList(trigger.substring(5).split(" "));
                 clientMessagingService.scheduleJob(Integer.valueOf(params.get(1)), largestServerType, state.getLeft());
-                return generateState.apply(state.getLeft(), state.getRight());
+                try {
+                    return generateState.f(state.getLeft(), state.getRight(), emptyList());
+                } catch (Exception e) {
+                    // TODO: Fix same as above. Write wrapper
+                    return null;
+                }
             });
         }
     }
