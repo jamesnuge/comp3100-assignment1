@@ -5,7 +5,6 @@ import fj.data.Option;
 import xyz.jamesnuge.MessageParser.Message;
 import xyz.jamesnuge.messaging.ClientMessagingSystem;
 
-import static xyz.jamesnuge.MessageParser.Message.REDY;
 import static xyz.jamesnuge.SocketClientSystemFactory.generateClientSystem;
 import static xyz.jamesnuge.Util.chain;
 
@@ -17,11 +16,10 @@ public class Main {
                     .foreach((clientSystem -> {
                         chain(
                                 clientSystem.loginToServer("test"),
-                                (_s) -> clientSystem.sendMessage(REDY),
-                                (s) -> clientSystem.getMessage(),
+                                (_s) -> clientSystem.beginScheduling(),
                                 (_s) -> clientSystem.getServerState().rightMap(Object::toString),
                                 Util::printString,
-                                (s) -> clientSystem.sendMessage(Message.QUIT)
+                                (s) -> clientSystem.quit()
                         );
                         return Unit.unit();
                     }));

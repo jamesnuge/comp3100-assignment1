@@ -12,6 +12,7 @@ import xyz.jamesnuge.state.ServerStateItem;
 
 import static xyz.jamesnuge.MessageParser.Message.HELO;
 import static xyz.jamesnuge.MessageParser.Message.PSHJ;
+import static xyz.jamesnuge.MessageParser.Message.QUIT;
 import static xyz.jamesnuge.MessageParser.Message.REDY;
 import static xyz.jamesnuge.MessageParser.Message.SCHD;
 import static xyz.jamesnuge.Util.chain;
@@ -60,24 +61,27 @@ public class ClientMessagingSystem {
         return sendMessage(PSHJ);
     }
 
-    public Either<String, String> sendMessage(Message message) {
+    Either<String, String> sendMessage(Message message) {
         return this.sendMessage(message.name());
     }
 
-    public Either<String, String> sendMessage(String message) {
+    Either<String, String> sendMessage(String message) {
         return MessageParser.sendMessage(write, message);
     }
 
-    public Either<String, String> getMessage() {
+    Either<String, String> getMessage() {
         return MessageParser.getMessage(read);
     }
 
-    public Either<String, String> getMessage(Message message) {
+    Either<String, String> getMessage(Message message) {
         return MessageParser.getMessage(read, message.name());
     }
 
-    public Either<String, String> getMessage(InboudMessage message) {
+    Either<String, String> getMessage(InboudMessage message) {
         return MessageParser.getMessage(read, message.name());
     }
 
+    public Either<String, String> quit() {
+        return sendMessage(QUIT);
+    }
 }

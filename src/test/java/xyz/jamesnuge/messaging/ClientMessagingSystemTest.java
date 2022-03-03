@@ -99,4 +99,14 @@ class ClientMessagingSystemTest {
         );
     }
 
+    @Test
+    public void testQuitSendsMessage() {
+        final Either<String, String> schedulingResult = clientMessagingSystem.quit();
+        verify(writeMock).apply(eq("QUIT"));
+        assertRight(
+                "write",
+                schedulingResult
+        );
+    }
+
 }
