@@ -17,12 +17,12 @@ import static xyz.jamesnuge.MessageParser.Message.REDY;
 import static xyz.jamesnuge.MessageParser.Message.SCHD;
 import static xyz.jamesnuge.Util.chain;
 
-public class ClientMessagingSystem {
+public class ClientMessagingService {
 
     private final Function<String, Either<String, String>> write;
     private final Supplier<Either<String, String>> read;
 
-    public ClientMessagingSystem(final Function<String, Either<String, String>> write, final Supplier<Either<String, String>> read) {
+    public ClientMessagingService(final Function<String, Either<String, String>> write, final Supplier<Either<String, String>> read) {
         this.write = write;
         this.read = read;
     }

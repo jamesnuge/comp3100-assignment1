@@ -22,7 +22,7 @@ import static xyz.jamesnuge.fixtures.ServerStateItemFixtures.SERVER_STATE_ITEM;
 import static xyz.jamesnuge.fixtures.ServerStateItemFixtures.createServerStateString;
 import static xyz.jamesnuge.util.TestUtil.assertRight;
 
-class ClientMessagingSystemTest {
+class ClientMessagingServiceTest {
 
     @Mock
     Function<String, Either<String, String>> writeMock;
@@ -31,7 +31,7 @@ class ClientMessagingSystemTest {
     Supplier<Either<String, String>> readMock;
 
     @InjectMocks
-    ClientMessagingSystem clientMessagingSystem;
+    ClientMessagingService clientMessagingService;
 
     @BeforeEach
     public void setup() {
@@ -44,7 +44,7 @@ class ClientMessagingSystemTest {
         final InOrder inOrder = inOrder(writeMock, readMock);
         final String userName = "userName";
         when(readMock.get()).thenReturn(right("OK"));
-        clientMessagingSystem.loginToServer(userName);
+        clientMessagingService.loginToServer(userName);
         inOrder.verify(writeMock).apply(eq("HELO"));
         inOrder.verify(readMock).get();
         inOrder.verify(writeMock).apply("AUTH " + userName);
@@ -60,7 +60,7 @@ class ClientMessagingSystemTest {
                 right("DATA"),
                 right(createServerStateString(generatedState))
         );
-        final Either<String, List<ServerStateItem>> serverState = clientMessagingSystem.getServerState();
+        final Either<String, List<ServerStateItem>> serverState = clientMessagingService.getServerState();
         inOrder.verify(writeMock).apply(eq("GETS All"));
         inOrder.verify(readMock).get();
         inOrder.verify(writeMock).apply("OK");
@@ -73,7 +73,7 @@ class ClientMessagingSystemTest {
 
     @Test
     public void testScheduleJobSendsMessage() {
-        final Either<String, String> writeResult = clientMessagingSystem.scheduleJob(1, "test", 4);
+        final Either<String, String> writeResult = clientMessagingService.scheduleJob(1, "test", 4);
         verify(writeMock).apply("SCHD 1 test 4");
         assertRight("write", writeResult);
     }
@@ -81,7 +81,7 @@ class ClientMessagingSystemTest {
 
     @Test
     public void testBeginSchedulingSendsRedyMessageAndReceivesOK() {
-        final Either<String, String> schedulingResult = clientMessagingSystem.beginScheduling();
+        final Either<String, String> schedulingResult = clientMessagingService.beginScheduling();
         verify(writeMock).apply(eq("REDY"));
         assertRight(
                 "write",
@@ -91,7 +91,7 @@ class ClientMessagingSystemTest {
 
     @Test
     public void testPushJobSendsMessage() {
-        final Either<String, String> schedulingResult = clientMessagingSystem.pushJob();
+        final Either<String, String> schedulingResult = clientMessagingService.pushJob();
         verify(writeMock).apply(eq("PSHJ"));
         assertRight(
                 "write",
@@ -101,7 +101,7 @@ class ClientMessagingSystemTest {
 
     @Test
     public void testQuitSendsMessage() {
-        final Either<String, String> schedulingResult = clientMessagingSystem.quit();
+        final Either<String, String> schedulingResult = clientMessagingService.quit();
         verify(writeMock).apply(eq("QUIT"));
         assertRight(
                 "write",

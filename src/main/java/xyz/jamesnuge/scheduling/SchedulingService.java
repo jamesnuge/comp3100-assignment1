@@ -1,13 +1,13 @@
 package xyz.jamesnuge.scheduling;
 
-import xyz.jamesnuge.messaging.ClientMessagingSystem;
+import xyz.jamesnuge.messaging.ClientMessagingService;
 
 public class SchedulingService {
 
-    private final ClientMessagingSystem clientMessagingSystem;
+    private final ClientMessagingService clientMessagingService;
 
-    public SchedulingService(final ClientMessagingSystem clientMessagingSystem) {
-        this.clientMessagingSystem = clientMessagingSystem;
+    public SchedulingService(final ClientMessagingService clientMessagingService) {
+        this.clientMessagingService = clientMessagingService;
     }
 
 }

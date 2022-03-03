@@ -9,14 +9,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-import xyz.jamesnuge.messaging.ClientMessagingSystem;
+import xyz.jamesnuge.messaging.ClientMessagingService;
 
 public class SocketClientSystemFactory {
 
     private SocketClientSystemFactory() {
     }
 
-    public static Option<ClientMessagingSystem> generateClientSystem(String host, Integer port) {
+    public static Option<ClientMessagingService> generateClientSystem(String host, Integer port) {
         System.out.println("Connect to server...");
         try {
             final Socket socket = new Socket(host, port);
@@ -25,7 +25,7 @@ public class SocketClientSystemFactory {
             final OutputStream os = socket.getOutputStream();
             final PrintWriter writer = new PrintWriter(os);
             final BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-            return Option.some(new ClientMessagingSystem(
+            return Option.some(new ClientMessagingService(
                     (s) -> {
                         writer.println(s);
                         writer.flush();
