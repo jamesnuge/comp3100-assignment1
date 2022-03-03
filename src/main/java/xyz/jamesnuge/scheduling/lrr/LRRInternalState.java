@@ -1,12 +1,9 @@
 package xyz.jamesnuge.scheduling.lrr;
 
+import fj.data.List;
 import fj.function.Try3;
-import java.util.List;
 import java.util.Objects;
-import java.util.function.BiFunction;
 import xyz.jamesnuge.scheduling.State;
-
-import static java.util.Collections.emptyList;
 
 public class LRRInternalState implements State {
 

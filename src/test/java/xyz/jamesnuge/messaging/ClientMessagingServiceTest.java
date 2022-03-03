@@ -1,7 +1,7 @@
 package xyz.jamesnuge.messaging;
 
 import fj.data.Either;
-import java.util.List;
+import fj.data.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +13,7 @@ import org.mockito.MockitoAnnotations;
 import xyz.jamesnuge.state.ServerStateItem;
 
 import static fj.data.Either.right;
+import static fj.data.List.list;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
@@ -66,7 +67,7 @@ class ClientMessagingServiceTest {
         inOrder.verify(writeMock).apply("OK");
         inOrder.verify(readMock).get();
         assertRight(
-                List.of(generatedState),
+                list(generatedState),
                 serverState
         );
     }

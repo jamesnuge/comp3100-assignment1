@@ -1,7 +1,7 @@
 package xyz.jamesnuge.messaging;
 
 import fj.data.Either;
-import java.util.List;
+import fj.data.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import xyz.jamesnuge.MessageParser;

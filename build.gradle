@@ -10,9 +10,11 @@ repositories {
 
 dependencies {
     implementation 'org.functionaljava:functionaljava:4.9'
+    implementation 'org.functionaljava:functionaljava-java8:4.8.1'
     implementation 'net.time4j:time4j-core:4.38'
     implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0-RC3'
     implementation 'org.glassfish.jaxb:jaxb-runtime:3.0.2'
+
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     testImplementation 'org.mockito:mockito-core:4.3.1'
