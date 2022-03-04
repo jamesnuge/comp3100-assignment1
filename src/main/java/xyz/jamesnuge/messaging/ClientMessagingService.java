@@ -61,16 +61,16 @@ public class ClientMessagingService {
         return sendMessage(PSHJ);
     }
 
+    public Either<String, String> getMessage() {
+        return MessageParser.getMessage(read);
+    }
+
     Either<String, String> sendMessage(Message message) {
         return this.sendMessage(message.name());
     }
 
     Either<String, String> sendMessage(String message) {
         return MessageParser.sendMessage(write, message);
-    }
-
-    Either<String, String> getMessage() {
-        return MessageParser.getMessage(read);
     }
 
     Either<String, String> getMessage(Message message) {
