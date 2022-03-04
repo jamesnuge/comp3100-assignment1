@@ -48,3 +48,4 @@ gradle/
 .tool-versions
 
 ds-system.xml
+ds-jobs.xml
