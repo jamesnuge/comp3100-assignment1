@@ -13,7 +13,6 @@ import xyz.jamesnuge.state.ServerStateItem;
 
 import static fj.data.Either.right;
 import static fj.data.List.list;
-import static fj.data.List.nil;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -41,7 +40,7 @@ class LRRStateMachineTest {
         when(cms.getServerState()).thenReturn(right(config));
         final StateMachine<LRRInternalState, String> stateMachine = new LRRStateMachine(cms);
         assertRight(
-                LRRInternalState.createInternalStateFactory("type1").f(-1, 1, nil()),
+                LRRInternalState.createInternalStateFactory("type1").f(-1, 1),
                 stateMachine.getCurrentState()
         );
         verify(cms).getServerState();
@@ -58,7 +57,7 @@ class LRRStateMachineTest {
         final StateMachine<LRRInternalState, String> stateMachine = new LRRStateMachine(cms);
         stateMachine.accept("alkdfjsldjfsadjf");
         assertRight(
-                LRRInternalState.createInternalStateFactory("type").f(-1, 2, nil()),
+                LRRInternalState.createInternalStateFactory("type").f(-1, 2),
                 stateMachine.getCurrentState()
         );
     }
@@ -76,7 +75,7 @@ class LRRStateMachineTest {
         final StateMachine<LRRInternalState, String> stateMachine = new LRRStateMachine(cms);
         stateMachine.accept("JOBN 2142 12 750 4 250 800");
         assertRight(
-                LRRInternalState.createInternalStateFactory("type").f(0, 2, nil()),
+                LRRInternalState.createInternalStateFactory("type").f(0, 2),
                 stateMachine.getCurrentState()
         );
         verify(cms).scheduleJob(eq(12), eq("type"), eq(0));
@@ -97,29 +96,12 @@ class LRRStateMachineTest {
         stateMachine.accept("JOBN 2142 13 750 4 250 800");
         stateMachine.accept("JOBN 2142 14 750 4 250 800");
         assertRight(
-                LRRInternalState.createInternalStateFactory("type").f(0, 2, nil()),
+                LRRInternalState.createInternalStateFactory("type").f(0, 2),
                 stateMachine.getCurrentState()
         );
         verify(cms).scheduleJob(eq(12), eq("type"), eq(0));
         verify(cms).scheduleJob(eq(13), eq("type"), eq(1));
         verify(cms).scheduleJob(eq(14), eq("type"), eq(0));
-    }
-
-    @Test
-    public void testStateMachineShouldAddServerToUnavailableList() throws Exception {
-        final List<ServerStateItem> config = list(
-                generateServerStateItem("type", 1),
-                generateServerStateItem("type", 2),
-                generateServerStateItem("type", 3)
-        );
-        when(cms.getServerState()).thenReturn(right(config));
-        when(cms.scheduleJob(any(), any(), any())).thenReturn(WRITE_RESULT);
-        final StateMachine<LRRInternalState, String> stateMachine = new LRRStateMachine(cms);
-        stateMachine.accept("RESF type 0 12");
-        assertRight(
-                LRRInternalState.createInternalStateFactory("type").f(-1, 3, list(0)),
-                stateMachine.getCurrentState()
-        );
     }
 
     @Test
@@ -133,7 +115,7 @@ class LRRStateMachineTest {
         final StateMachine<LRRInternalState, String> stateMachine = new LRRStateMachine(cms);
         stateMachine.accept("NONE");
         assertRight(
-                LRRInternalState.createFinalInternalStateFactory("type").f(-1, -1, nil()),
+                LRRInternalState.createFinalInternalStateFactory("type").f(-1, -1),
                 stateMachine.getCurrentState()
         );
     }
@@ -150,7 +132,7 @@ class LRRStateMachineTest {
         stateMachine.accept(MessageParser.InboudMessage.JCPL.name());
         verify(cms).signalRedy();
         assertRight(
-                LRRInternalState.createInternalStateFactory("type").f(-1, 3, nil()),
+                LRRInternalState.createInternalStateFactory("type").f(-1, 3),
                 stateMachine.getCurrentState()
         );
     }

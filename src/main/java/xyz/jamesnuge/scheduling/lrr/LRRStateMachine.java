@@ -3,7 +3,7 @@ package xyz.jamesnuge.scheduling.lrr;
 import fj.Ord;
 import fj.data.Either;
 import fj.data.List;
-import fj.function.Try3;
+import fj.function.Try2;
 import xyz.jamesnuge.MessageParser;
 import xyz.jamesnuge.Pair;
 import xyz.jamesnuge.Util;
@@ -15,7 +15,6 @@ import static fj.Ord.on;
 import static fj.Ord.ordDef;
 import static fj.data.Either.left;
 import static fj.data.Either.right;
-import static fj.data.List.nil;
 import static xyz.jamesnuge.MessageParser.Message.OK;
 import static xyz.jamesnuge.Util.chain;
 import static xyz.jamesnuge.Util.flatMap;
@@ -25,8 +24,8 @@ public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
 
     private final String largestServerType;
     private final ClientMessagingService clientMessagingService;
-    private final Try3<Integer, Integer, List<Integer>, LRRInternalState, Exception> generateState;
-    private final Try3<Integer, Integer, List<Integer>, LRRInternalState, Exception> generateFinalState;
+    private final Try2<Integer, Integer, LRRInternalState, Exception> generateState;
+    private final Try2<Integer, Integer, LRRInternalState, Exception> generateFinalState;
     private Either<String, LRRInternalState> currentState;
 
     public LRRStateMachine(final ClientMessagingService clientMessagingService) {
@@ -39,7 +38,7 @@ public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
                 serverState.rightMap((s) -> s.filter((item) -> item.getType().equals(largestServerType)).length()),
                 (s) -> {
                     try {
-                        return right(this.generateState.f(-1, s, nil()));
+                        return right(this.generateState.f(-1, s));
                     } catch (Exception e) {
                         return left(e.getMessage());
                     }
@@ -61,7 +60,7 @@ public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
                                         (s) -> s.equals(OK.name()) ? clientMessagingService.signalRedy() : chain(clientMessagingService.getMessage(), (_s) -> clientMessagingService.signalRedy())
                                 ),
                                 (_s) -> getCurrentState(),
-                                (state) -> tryEither(() -> generateState.f(nextServer.getLeft(), nextServer.getRight(), state.getUnavailableServers()))
+                                (state) -> tryEither(() -> generateState.f(nextServer.getLeft(), nextServer.getRight()))
                         );
                     });
         } else if (trigger.contains(MessageParser.InboudMessage.RESF.name())) {
@@ -69,18 +68,16 @@ public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
                     currentState,
                     (state) -> tryEither(() -> {
                         List<String> triggerParams = List.list(trigger.substring(5).split(" "));
-                        final List<Integer> unavailableServers = state.getUnavailableServers();
                         return generateState.f(
                                 state.getLastAssignedServerId(),
-                                state.getNumberOfServers(),
-                                unavailableServers.append(List.list(Integer.parseInt(triggerParams.index(1))))
+                                state.getNumberOfServers()
                         );
                     })
             );
         } else if (trigger.contains(MessageParser.InboudMessage.JCPL.name())) {
             clientMessagingService.signalRedy();
         } else if (trigger.contains(MessageParser.InboudMessage.NONE.name())) {
-            this.currentState = tryEither(() -> generateFinalState.f(-1, -1, nil()));
+            this.currentState = tryEither(() -> generateFinalState.f(-1, -1));
         }
 
     }

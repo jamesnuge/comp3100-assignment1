@@ -8,7 +8,6 @@ import xyz.jamesnuge.messaging.ClientMessagingService;
 import static fj.data.Either.left;
 import static fj.data.Either.right;
 import static xyz.jamesnuge.Util.chain;
-import static xyz.jamesnuge.Util.flatMap;
 
 public class SchedulingService {
 
