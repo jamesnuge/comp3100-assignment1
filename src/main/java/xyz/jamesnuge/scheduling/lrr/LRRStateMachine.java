@@ -16,6 +16,9 @@ import static fj.Ord.ordDef;
 import static fj.data.Either.left;
 import static fj.data.Either.right;
 import static fj.data.List.nil;
+import static xyz.jamesnuge.MessageParser.Message.OK;
+import static xyz.jamesnuge.Util.chain;
+import static xyz.jamesnuge.Util.flatMap;
 import static xyz.jamesnuge.Util.tryEither;
 
 public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
@@ -26,8 +29,8 @@ public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
     private final Try3<Integer, Integer, List<Integer>, LRRInternalState, Exception> generateFinalState;
     private Either<String, LRRInternalState> currentState;
 
-    public LRRStateMachine(ClientMessagingService clientMessagingService) {
-        Either<String, List<ServerStateItem>> serverState = clientMessagingService.getServerState();
+    public LRRStateMachine(final ClientMessagingService clientMessagingService) {
+        final Either<String, List<ServerStateItem>> serverState = clientMessagingService.getServerState();
         this.largestServerType = getHighestCapacityServerType(serverState.right().value());
         this.generateState = LRRInternalState.createInternalStateFactory(largestServerType);
         this.generateFinalState = LRRInternalState.createFinalInternalStateFactory(largestServerType);
@@ -51,9 +54,13 @@ public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
                     getNextServerId(),
                     (nextServer) -> {
                         final List<String> params = List.list(trigger.substring(5).split(" "));
-                        clientMessagingService.scheduleJob(Integer.valueOf(params.index(1)), largestServerType, nextServer.getLeft());
-                        return Util.flatMap(
-                                getCurrentState(),
+                        return flatMap(
+                                chain(
+                                        clientMessagingService.scheduleJob(Integer.valueOf(params.index(1)), largestServerType, nextServer.getLeft()),
+                                        (_s) -> clientMessagingService.getMessage(),
+                                        (s) -> s.equals(OK.name()) ? clientMessagingService.signalRedy() : chain(clientMessagingService.getMessage(), (_s) -> clientMessagingService.signalRedy())
+                                ),
+                                (_s) -> getCurrentState(),
                                 (state) -> tryEither(() -> generateState.f(nextServer.getLeft(), nextServer.getRight(), state.getUnavailableServers()))
                         );
                     });

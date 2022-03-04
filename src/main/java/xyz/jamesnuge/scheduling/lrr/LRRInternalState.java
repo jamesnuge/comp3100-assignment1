@@ -5,11 +5,16 @@ import fj.function.Try3;
 import java.util.Objects;
 import xyz.jamesnuge.scheduling.State;
 
+import static fj.data.List.nil;
+
 public class LRRInternalState implements State {
+
+    public static final LRRInternalState INITIAL_STATE = new LRRInternalState(-1, "", -1, nil(), false);
 
     private final Integer lastAssignedServerId;
     private final String serverType;
     private final Integer numberOfServers;
+    //TODO: remove this
     private final List<Integer> unavailableServers;
     private final Boolean isFinalState;
 

@@ -41,6 +41,27 @@ public class Util {
         }
     }
 
+    public static <A, B, C> Either<String, C> flatMap(
+            final Either<String, A> a,
+            Function<A, Either<String, B>> ab,
+            Function<B, Either<String, C>> bc
+            ) {
+        Either<String, B> b = flatMap(a, ab);
+        return flatMap(b, bc);
+    }
+
+    public static <A, B, C, D> Either<String, D> flatMap(
+            final Either<String, A> a,
+            Function<A, Either<String, B>> ab,
+            Function<B, Either<String, C>> bc,
+            Function<C, Either<String, D>> cd
+    ) {
+        Either<String, B> b = flatMap(a, ab);
+        Either<String, C> c = flatMap(b, bc);
+        return flatMap(c, cd);
+    }
+
+
     public static Either<String, String> chain(final List<Function<String, Either<String, String>>> chains) {
         if (chains.isEmpty()) {
             return left("Cannot chain with empty list of functions");

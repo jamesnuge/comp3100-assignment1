@@ -1,5 +1,6 @@
 package xyz.jamesnuge.scheduling.lrr;
 
+import fj.data.Either;
 import fj.data.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,11 +17,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static xyz.jamesnuge.MessageParser.Message.OK;
 import static xyz.jamesnuge.fixtures.ServerStateItemFixtures.SERVER_STATE_ITEM;
 import static xyz.jamesnuge.fixtures.ServerStateItemFixtures.generateServerStateItem;
 import static xyz.jamesnuge.util.TestUtil.assertRight;
 
 class LRRStateMachineTest {
+
+    private static final Either<String, String> WRITE_RESULT = right("write");
 
     @Mock
     ClientMessagingService cms;
@@ -49,7 +53,7 @@ class LRRStateMachineTest {
                 generateServerStateItem("type", 2)
         );
         when(cms.getServerState()).thenReturn(right(config));
-        when(cms.scheduleJob(any(), any(), any())).thenReturn(right("write"));
+        when(cms.scheduleJob(any(), any(), any())).thenReturn(WRITE_RESULT);
         final StateMachine<LRRInternalState, String> stateMachine = new LRRStateMachine(cms);
         stateMachine.accept("alkdfjsldjfsadjf");
         assertRight(
@@ -65,7 +69,9 @@ class LRRStateMachineTest {
                 generateServerStateItem("type", 2)
         );
         when(cms.getServerState()).thenReturn(right(config));
-        when(cms.scheduleJob(any(), any(), any())).thenReturn(right("write"));
+        when(cms.scheduleJob(any(), any(), any())).thenReturn(WRITE_RESULT);
+        when(cms.getMessage()).thenReturn(right(OK.name()), right(""));
+        when(cms.signalRedy()).thenReturn(WRITE_RESULT);
         final StateMachine<LRRInternalState, String> stateMachine = new LRRStateMachine(cms);
         stateMachine.accept("JOBN 2142 12 750 4 250 800");
         assertRight(
@@ -82,7 +88,9 @@ class LRRStateMachineTest {
                 generateServerStateItem("type", 2)
         );
         when(cms.getServerState()).thenReturn(right(config));
-        when(cms.scheduleJob(any(), any(), any())).thenReturn(right("write"));
+        when(cms.scheduleJob(any(), any(), any())).thenReturn(WRITE_RESULT);
+        when(cms.getMessage()).thenReturn(right(OK.name()), right(""));
+        when(cms.signalRedy()).thenReturn(WRITE_RESULT);
         final StateMachine<LRRInternalState, String> stateMachine = new LRRStateMachine(cms);
         stateMachine.accept("JOBN 2142 12 750 4 250 800");
         stateMachine.accept("JOBN 2142 13 750 4 250 800");
@@ -104,12 +112,11 @@ class LRRStateMachineTest {
                 generateServerStateItem("type", 3)
         );
         when(cms.getServerState()).thenReturn(right(config));
-        when(cms.scheduleJob(any(), any(), any())).thenReturn(right("write"));
+        when(cms.scheduleJob(any(), any(), any())).thenReturn(WRITE_RESULT);
         final StateMachine<LRRInternalState, String> stateMachine = new LRRStateMachine(cms);
         stateMachine.accept("RESF type 0 12");
-        stateMachine.accept("JOBN 2142 12 750 4 250 800");
         assertRight(
-                LRRInternalState.createInternalStateFactory("type").f(0, 3, list(0)),
+                LRRInternalState.createInternalStateFactory("type").f(-1, 3, list(0)),
                 stateMachine.getCurrentState()
         );
     }

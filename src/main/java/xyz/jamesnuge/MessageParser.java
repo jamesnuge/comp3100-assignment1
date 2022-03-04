@@ -7,6 +7,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import static xyz.jamesnuge.Util.chain;
 import static xyz.jamesnuge.Util.flatMap;
 import static xyz.jamesnuge.Util.match;
 import static xyz.jamesnuge.Util.toOption;
@@ -50,12 +51,12 @@ public class MessageParser {
     }
 
     public static Either<String, String> getMessage(final Supplier<Either<String, String>> read, final Predicate<String> predicate) {
-        return tryUntil(Duration.of(1, ChronoUnit.SECONDS), () -> toOption(
+        return chain(tryUntil(Duration.of(1, ChronoUnit.SECONDS), () -> toOption(
                 flatMap(
                         read.get(),
                         match(predicate)
                 )
-        ));
+        )), Util::printString);
     }
 
     public static Either<String, String> sendMessage(final Function<String, Either<String, String>> write, String message) {

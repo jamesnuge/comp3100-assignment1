@@ -25,7 +25,8 @@ public class SchedulingService {
             return chain(
                     clientMessagingService.loginToServer("user"),
                     (s) -> clientMessagingService.beginScheduling(),
-                    (_s) -> process(algorithms.get(algorithm).apply(clientMessagingService))
+                    (_s) -> clientMessagingService.getMessage(),
+                    (s) -> process(algorithms.get(algorithm).apply(clientMessagingService), s)
             );
         } else {
             return left("Algorithm " + algorithm + " not found");
@@ -37,19 +38,25 @@ public class SchedulingService {
         if (message.isLeft()) {
             return message;
         } else {
-            stateMachine.accept(message.right().value());
-            Either<String, ? extends State> currentState = stateMachine.getCurrentState();
-            return flatMap(
-                    currentState,
-                    (state) -> {
-                        if (state.isFinalState()) {
-                            return right("Successfully ran algorithm");
-                        } else {
-                            return process(stateMachine);
-                        }
-                    }
-            );
+            return process(stateMachine, message.right().value());
         }
     }
+
+    private Either<String, String> process(StateMachine<?, String> stateMachine, String message) {
+        stateMachine.accept(message);
+        Either<String, ? extends State> currentState = stateMachine.getCurrentState();
+        return flatMap(
+                currentState,
+                (state) -> {
+                    if (state.isFinalState()) {
+                        return right("Successfully ran algorithm");
+                    } else {
+                        return process(stateMachine);
+                    }
+                }
+        );
+    }
+
+
 
 }
