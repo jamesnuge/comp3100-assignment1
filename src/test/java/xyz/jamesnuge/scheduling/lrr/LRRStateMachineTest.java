@@ -114,4 +114,20 @@ class LRRStateMachineTest {
         );
     }
 
+    @Test
+    public void testStateShouldShouldReturnFinalStateOnNone() throws Exception {
+        final List<ServerStateItem> config = list(
+                generateServerStateItem("type", 1),
+                generateServerStateItem("type", 2),
+                generateServerStateItem("type", 3)
+        );
+        when(cms.getServerState()).thenReturn(right(config));
+        final StateMachine<LRRInternalState, String> stateMachine = new LRRStateMachine(cms);
+        stateMachine.accept("NONE");
+        assertRight(
+                LRRInternalState.createFinalInternalStateFactory("type").f(-1, -1, nil()),
+                stateMachine.getCurrentState()
+        );
+    }
+
 }

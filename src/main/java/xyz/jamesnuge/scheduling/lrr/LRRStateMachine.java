@@ -11,8 +11,11 @@ import xyz.jamesnuge.messaging.ClientMessagingService;
 import xyz.jamesnuge.scheduling.StateMachine;
 import xyz.jamesnuge.state.ServerStateItem;
 
+import static fj.Ord.on;
+import static fj.Ord.ordDef;
 import static fj.data.Either.left;
 import static fj.data.Either.right;
+import static fj.data.List.nil;
 import static xyz.jamesnuge.Util.tryEither;
 
 public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
@@ -27,13 +30,13 @@ public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
         Either<String, List<ServerStateItem>> serverState = clientMessagingService.getServerState();
         this.largestServerType = getHighestCapacityServerType(serverState.right().value());
         this.generateState = LRRInternalState.createInternalStateFactory(largestServerType);
-        this.generateFinalState = LRRInternalState.createInternalStateFactory(largestServerType);
+        this.generateFinalState = LRRInternalState.createFinalInternalStateFactory(largestServerType);
         this.clientMessagingService = clientMessagingService;
         this.currentState = Util.flatMap(
                 serverState.rightMap((s) -> s.filter((item) -> item.getType().equals(largestServerType)).length()),
                 (s) -> {
                     try {
-                        return right(this.generateState.f(-1, s, List.nil()));
+                        return right(this.generateState.f(-1, s, nil()));
                     } catch (Exception e) {
                         return left(e.getMessage());
                     }
@@ -68,11 +71,14 @@ public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
                     })
             );
         }
+        else if (trigger.contains(MessageParser.InboudMessage.NONE.name())) {
+            this.currentState = tryEither(() -> generateFinalState.f(-1, -1, nil()));
+        }
 
     }
 
     private static String getHighestCapacityServerType(final List<ServerStateItem> config) {
-        return config.maximum(Ord.ordDef(Ord.on(ServerStateItem::getCores, Ord.intOrd))).getType();
+        return config.maximum(ordDef(on(ServerStateItem::getCores, Ord.intOrd))).getType();
     }
 
     @Override
