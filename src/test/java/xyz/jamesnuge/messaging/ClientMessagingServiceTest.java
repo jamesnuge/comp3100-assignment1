@@ -5,7 +5,6 @@ import fj.data.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
