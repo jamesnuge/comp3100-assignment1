@@ -66,13 +66,10 @@ public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
         } else if (trigger.contains(MessageParser.InboudMessage.RESF.name())) {
             this.currentState = Util.flatMap(
                     currentState,
-                    (state) -> tryEither(() -> {
-                        List<String> triggerParams = List.list(trigger.substring(5).split(" "));
-                        return generateState.f(
-                                state.getLastAssignedServerId(),
-                                state.getNumberOfServers()
-                        );
-                    })
+                    (state) -> tryEither(() -> generateState.f(
+                            state.getLastAssignedServerId(),
+                            state.getNumberOfServers()
+                    ))
             );
         } else if (trigger.contains(MessageParser.InboudMessage.JCPL.name())) {
             clientMessagingService.signalRedy();
