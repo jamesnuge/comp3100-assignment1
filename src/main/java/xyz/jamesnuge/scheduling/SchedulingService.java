@@ -35,28 +35,39 @@ public class SchedulingService {
         }
     }
 
-    private Either<String, String> process(StateMachine<?, String> stateMachine) {
-        Either<String, String> message = clientMessagingService.getMessage();
-        if (message.isLeft()) {
-            return message;
-        } else {
-            return process(stateMachine, message.right().value());
+    private Either<String, String> process(StateMachine<? extends State, String> stateMachine) {
+        while (true) {
+            Either<String, String> message = clientMessagingService.getMessage();
+            if (message.isLeft()) {
+                return message;
+            } else {
+                stateMachine.accept(message.right().value());
+                Either<String, ? extends State> currentState = stateMachine.getCurrentState();
+                if (currentState.isLeft()) {
+                    return left("Failed to process message: " + message + ". " + currentState.left().value());
+                } else {
+                    State value = currentState.right().value();
+                    if (value.isFinalState()) {
+                        return right("Successfully ran algorithm");
+                    }
+                }
+            }
         }
     }
 
-    private Either<String, String> process(StateMachine<?, String> stateMachine, String message) {
+    private Either<String, String> process(StateMachine<? extends State, String> stateMachine, String message) {
         stateMachine.accept(message);
         Either<String, ? extends State> currentState = stateMachine.getCurrentState();
-        return flatMap(
-                currentState,
-                (state) -> {
-                    if (state.isFinalState()) {
-                        return right("Successfully ran algorithm");
-                    } else {
-                        return process(stateMachine);
-                    }
-                }
-        );
+        if (currentState.isLeft()) {
+            return left("Failed to process message: " + message + ". " + currentState.left().value());
+        } else {
+            State value = currentState.right().value();
+            if (value.isFinalState()) {
+                return right("Successfully ran algorithm");
+            } else {
+                return process(stateMachine);
+            }
+        }
     }
 
 
