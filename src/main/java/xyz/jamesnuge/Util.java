@@ -1,7 +1,9 @@
 package xyz.jamesnuge;
 
+import fj.Try;
 import fj.data.Either;
 import fj.data.Option;
+import fj.function.Try0;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -14,6 +16,9 @@ import java.util.function.Supplier;
 import net.time4j.SystemClock;
 import net.time4j.TemporalType;
 
+import static fj.data.Either.left;
+import static fj.data.Either.right;
+
 public class Util {
 
     public static <B> Either<String, B> tryUntil(final Duration duration, final Supplier<Option<B>> supplier) {
@@ -25,20 +30,20 @@ public class Util {
                 return option.toEither("Did not get correct message from server");
             }
         }
-        return Either.left("Could not fetch value in time");
+        return left("Could not fetch value in time");
     }
 
     public static <A, B> Either<String, B> flatMap(final Either<String, A> a, Function<A, Either<String, B>> fn) {
         if (a.isRight()) {
             return fn.apply(a.right().value());
         } else {
-            return Either.left(a.left().value());
+            return left(a.left().value());
         }
     }
 
     public static Either<String, String> chain(final List<Function<String, Either<String, String>>> chains) {
         if (chains.isEmpty()) {
-            return Either.left("Cannot chain with empty list of functions");
+            return left("Cannot chain with empty list of functions");
         } else {
             return chain(chains.get(0).apply(""), chains.subList(1, chains.size()));
         }
@@ -71,8 +76,16 @@ public class Util {
         }
     }
 
+    public static <A> Either<String, A> tryEither(Try0<A, Exception> supplier) {
+        try {
+            return right(supplier.f());
+        } catch (Exception e) {
+            return left(e.getMessage());
+        }
+    }
+
     public static Function<String, Either<String, String>> match(Predicate<String> matcher) {
-        return (s) -> matcher.test(s) ? Either.right(s) : Either.left("Value '" + s + "' did not pass matcher");
+        return (s) -> matcher.test(s) ? right(s) : left("Value '" + s + "' did not pass matcher");
     }
 
     public static <A, T> Option<T> toOption(final Either<A, T> either) {
@@ -85,7 +98,7 @@ public class Util {
 
     public static Either<String, String> printString(String s) {
         System.out.println(s);
-        return Either.right(s);
+        return right(s);
     }
 
 }

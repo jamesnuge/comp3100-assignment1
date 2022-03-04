@@ -13,6 +13,7 @@ import xyz.jamesnuge.state.ServerStateItem;
 
 import static fj.data.Either.left;
 import static fj.data.Either.right;
+import static xyz.jamesnuge.Util.tryEither;
 
 public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
 
@@ -50,32 +51,22 @@ public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
                         clientMessagingService.scheduleJob(Integer.valueOf(params.index(1)), largestServerType, nextServer.getLeft());
                         return Util.flatMap(
                                 getCurrentState(),
-                                (state) -> {
-                                    try {
-                                        return right(generateState.f(nextServer.getLeft(), nextServer.getRight(), state.getUnavailableServers()));
-                                    } catch (Exception e) {
-                                        return left(e.getMessage());
-                                    }
-                                });
+                                (state) -> tryEither(() -> generateState.f(nextServer.getLeft(), nextServer.getRight(), state.getUnavailableServers()))
+                        );
                     });
         } else if (trigger.contains(MessageParser.InboudMessage.RESF.name())) {
-            this.currentState =
-                    Util.flatMap(
-                            currentState,
-                            (state) -> {
-                                List<String> triggerParams = List.list(trigger.substring(5).split(" "));
-                                final List<Integer> unavailableServers = state.getUnavailableServers();
-                                try {
-                                    return right(generateState.f(
-                                            state.getLastAssignedServerId(),
-                                            state.getNumberOfServers(),
-                                            unavailableServers.append(List.list(Integer.parseInt(triggerParams.index(1))))
-                                    ));
-                                } catch (Exception e) {
-                                    return left(e.getMessage());
-                                }
-                            }
-                    );
+            this.currentState = Util.flatMap(
+                    currentState,
+                    (state) -> tryEither(() -> {
+                        List<String> triggerParams = List.list(trigger.substring(5).split(" "));
+                        final List<Integer> unavailableServers = state.getUnavailableServers();
+                        return generateState.f(
+                                state.getLastAssignedServerId(),
+                                state.getNumberOfServers(),
+                                unavailableServers.append(List.list(Integer.parseInt(triggerParams.index(1))))
+                        );
+                    })
+            );
         }
 
     }
