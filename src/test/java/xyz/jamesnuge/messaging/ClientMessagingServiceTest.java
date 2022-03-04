@@ -18,6 +18,7 @@ import static fj.data.List.list;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static xyz.jamesnuge.fixtures.ServerStateItemFixtures.SERVER_STATE_ITEM;
@@ -56,7 +57,6 @@ class ClientMessagingServiceTest {
 
     @Test
     public void testGetServerStateForAllComputers() {
-        final InOrder inOrder = inOrder(writeMock, readMock);
         final ServerStateItem generatedState = SERVER_STATE_ITEM;
         when(readMock.get()).thenReturn(
                 right("DATA"),
@@ -64,13 +64,6 @@ class ClientMessagingServiceTest {
                 left("")
         );
         final Either<String, List<ServerStateItem>> serverState = clientMessagingService.getServerState();
-        // TODO: Fix order verification
-//        inOrder.verify(writeMock).apply(eq("GETS All"));
-//        inOrder.verify(readMock).get();
-//        inOrder.verify(writeMock).apply("OK");
-//        inOrder.verify(readMock).get();
-//        inOrder.verify(readMock).get();
-//        inOrder.verify(writeMock).apply(eq("OK"));
         assertRight(
                 list(generatedState),
                 serverState

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import xyz.jamesnuge.MessageParser;
 import xyz.jamesnuge.messaging.ClientMessagingService;
 import xyz.jamesnuge.scheduling.StateMachine;
 import xyz.jamesnuge.state.ServerStateItem;
@@ -133,6 +134,23 @@ class LRRStateMachineTest {
         stateMachine.accept("NONE");
         assertRight(
                 LRRInternalState.createFinalInternalStateFactory("type").f(-1, -1, nil()),
+                stateMachine.getCurrentState()
+        );
+    }
+
+    @Test
+    public void testStateShouldNoopJobCompletionMessage() throws Exception {
+        final List<ServerStateItem> config = list(
+                generateServerStateItem("type", 1),
+                generateServerStateItem("type", 2),
+                generateServerStateItem("type", 3)
+        );
+        when(cms.getServerState()).thenReturn(right(config));
+        final StateMachine<LRRInternalState, String> stateMachine = new LRRStateMachine(cms);
+        stateMachine.accept(MessageParser.InboudMessage.JCPL.name());
+        verify(cms).signalRedy();
+        assertRight(
+                LRRInternalState.createInternalStateFactory("type").f(-1, 3, nil()),
                 stateMachine.getCurrentState()
         );
     }

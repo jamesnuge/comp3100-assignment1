@@ -14,6 +14,7 @@ import static xyz.jamesnuge.Util.toOption;
 import static xyz.jamesnuge.Util.tryUntil;
 
 public class MessageParser {
+    // TODO: Split Messages into 3 enums SERVER, CLIENT, COMMON
     public static enum Message {
         HELO,
         OK,

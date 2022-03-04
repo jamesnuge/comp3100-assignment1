@@ -46,6 +46,7 @@ class SchedulingServiceTest {
         service = new SchedulingService(cms, singletonMap("test", TestStateMachine::new));
         when(cms.loginToServer(any())).thenReturn(WRITE_RESULT);
         when(cms.beginScheduling()).thenReturn(WRITE_RESULT);
+        when(cms.quit()).thenReturn(WRITE_RESULT);
         when(cms.getMessage()).thenReturn(
                 right("1"),
                 right("2"),

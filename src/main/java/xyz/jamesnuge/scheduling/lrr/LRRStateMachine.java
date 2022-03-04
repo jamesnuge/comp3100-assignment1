@@ -77,8 +77,9 @@ public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
                         );
                     })
             );
-        }
-        else if (trigger.contains(MessageParser.InboudMessage.NONE.name())) {
+        } else if (trigger.contains(MessageParser.InboudMessage.JCPL.name())) {
+            clientMessagingService.signalRedy();
+        } else if (trigger.contains(MessageParser.InboudMessage.NONE.name())) {
             this.currentState = tryEither(() -> generateFinalState.f(-1, -1, nil()));
         }
 

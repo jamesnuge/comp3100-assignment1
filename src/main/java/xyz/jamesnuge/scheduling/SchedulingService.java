@@ -26,7 +26,9 @@ public class SchedulingService {
                     clientMessagingService.loginToServer("user"),
                     (s) -> clientMessagingService.beginScheduling(),
                     (_s) -> clientMessagingService.getMessage(),
-                    (s) -> process(algorithms.get(algorithm).apply(clientMessagingService), s)
+                    (s) -> process(algorithms.get(algorithm).apply(clientMessagingService), s),
+                    (_s) -> clientMessagingService.quit(),
+                    (_s) -> right("Successfully ran algorithm")
             );
         } else {
             return left("Algorithm " + algorithm + " not found");
