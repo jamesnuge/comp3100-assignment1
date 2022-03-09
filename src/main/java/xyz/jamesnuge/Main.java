@@ -1,5 +1,6 @@
 package xyz.jamesnuge;
 
+import fj.data.Either;
 import fj.data.Option;
 import java.util.Map;
 import xyz.jamesnuge.messaging.ClientMessagingService;
@@ -21,10 +22,13 @@ public class Main {
                         maybeMessagingSystem.some(),
                         Map.of("LRR", LRRStateMachine::new)
                         );
-                chain(
+                final Either<String, String> result = chain(
                         service.scheduleJobsUsingAlgorithm(args[0]),
                         Util::printString
                      );
+                if (result.isLeft()) {
+                    System.out.println("Could not schedule jobs using algorithm " + args[0] + ": " + result.left().value());
+                }
             } else {
                 System.out.println("Unable to connect to server");
             }
