@@ -1,16 +1,18 @@
 package xyz.jamesnuge.scheduling.lrr;
 
+import fj.F;
 import fj.data.List;
 import fj.function.Try2;
 import fj.function.Try3;
 import java.util.Objects;
 import xyz.jamesnuge.scheduling.State;
 
-import static fj.data.List.nil;
 
 public class LRRInternalState implements State {
 
     public static final LRRInternalState INITIAL_STATE = new LRRInternalState(-1, "", -1, false);
+
+    public static final F<String, LRRInternalState> generateInitialState = (s) -> new LRRInternalState(-1, s, 0, false);
 
     private final Integer lastAssignedServerId;
     private final String serverType;

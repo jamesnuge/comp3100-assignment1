@@ -34,7 +34,8 @@ public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
         this.generateState = LRRInternalState.createInternalStateFactory(largestServerType);
         this.generateFinalState = LRRInternalState.createFinalInternalStateFactory(largestServerType);
         this.clientMessagingService = clientMessagingService;
-        this.currentState = Util.flatMap(
+        this.currentState = Util.
+                flatMap(
                 serverState.rightMap((s) -> s.filter((item) -> item.getType().equals(largestServerType)).length()),
                 (s) -> {
                     try {
@@ -79,7 +80,7 @@ public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
 
     }
 
-    private static String getHighestCapacityServerType(final List<ServerStateItem> config) {
+    public static String getHighestCapacityServerType(final List<ServerStateItem> config) {
         return config.maximum(ordDef(on(ServerStateItem::getCores, Ord.intOrd))).getType();
     }
 

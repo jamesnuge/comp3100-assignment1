@@ -12,6 +12,10 @@ public class Pair<L, R> implements Map.Entry<L, R> {
         this.right = right;
     }
 
+    public static <L, R> Pair<L, R> of(L l, R r) {
+        return new Pair(l, r);
+    }
+
     public L getLeft() {
         return left;
     }
