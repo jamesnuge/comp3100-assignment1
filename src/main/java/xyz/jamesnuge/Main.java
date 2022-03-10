@@ -6,9 +6,11 @@ import java.util.Map;
 import xyz.jamesnuge.messaging.ClientMessagingService;
 import xyz.jamesnuge.scheduling.SchedulingService;
 import xyz.jamesnuge.scheduling.lrr.LRRStateMachine;
+import xyz.jamesnuge.scheduling.lrr.LrrFactory;
 
 import static xyz.jamesnuge.SocketClientSystemFactory.generateClientSystem;
 import static xyz.jamesnuge.Util.chain;
+import static xyz.jamesnuge.Util.mapOf;
 
 public class Main {
     public static void main(String[] args) {
@@ -20,12 +22,12 @@ public class Main {
             if (maybeMessagingSystem.isSome()) {
                 final SchedulingService service = new SchedulingService(
                         maybeMessagingSystem.some(),
-                        Map.of("LRR", LRRStateMachine::new)
-                        );
+                        mapOf("LRR", new LrrFactory())
+                );
                 final Either<String, String> result = chain(
-                        service.scheduleJobsUsingAlgorithm(args[0]),
+                        service.scheduleJobsUsingAlgorithm("LRR"),
                         Util::printString
-                     );
+                );
                 if (result.isLeft()) {
                     System.out.println("Could not schedule jobs using algorithm " + args[0] + ": " + result.left().value());
                 }

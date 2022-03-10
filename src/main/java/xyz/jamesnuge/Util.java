@@ -9,7 +9,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -20,6 +22,12 @@ import static fj.data.Either.left;
 import static fj.data.Either.right;
 
 public class Util {
+
+    public static <L, R> Map<L, R> mapOf(L l, R r) {
+        Map<L, R> map = new HashMap<>();
+        map.put(l, r);
+        return map;
+    }
 
     public static <B> Either<String, B> tryUntil(final Duration duration, final Supplier<Option<B>> supplier) {
         final Clock clock = TemporalType.CLOCK.from(SystemClock.MONOTONIC);

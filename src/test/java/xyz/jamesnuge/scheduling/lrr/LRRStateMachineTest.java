@@ -38,7 +38,7 @@ class LRRStateMachineTest {
     public void testStateMachineConstructsWithCorrectInitialState() throws Exception {
         final List<ServerStateItem> config = list(SERVER_STATE_ITEM);
         when(cms.getServerState()).thenReturn(right(config));
-        final StateMachine<LRRInternalState, String> stateMachine = new LRRStateMachine(cms);
+        final LRRStateMachine stateMachine = new LRRStateMachine(cms);
         assertRight(
                 LRRInternalState.createInternalStateFactory("type1").f(-1, 1),
                 stateMachine.getCurrentState()
@@ -54,7 +54,7 @@ class LRRStateMachineTest {
         );
         when(cms.getServerState()).thenReturn(right(config));
         when(cms.scheduleJob(any(), any(), any())).thenReturn(WRITE_RESULT);
-        final StateMachine<LRRInternalState, String> stateMachine = new LRRStateMachine(cms);
+        final LRRStateMachine stateMachine = new LRRStateMachine(cms);
         stateMachine.accept("alkdfjsldjfsadjf");
         assertRight(
                 LRRInternalState.createInternalStateFactory("type").f(-1, 2),
@@ -72,7 +72,7 @@ class LRRStateMachineTest {
         when(cms.scheduleJob(any(), any(), any())).thenReturn(WRITE_RESULT);
         when(cms.getMessage()).thenReturn(right(OK.name()), right(""));
         when(cms.signalRedy()).thenReturn(WRITE_RESULT);
-        final StateMachine<LRRInternalState, String> stateMachine = new LRRStateMachine(cms);
+        final LRRStateMachine stateMachine = new LRRStateMachine(cms);
         stateMachine.accept("JOBN 2142 12 750 4 250 800");
         assertRight(
                 LRRInternalState.createInternalStateFactory("type").f(0, 2),
@@ -91,7 +91,7 @@ class LRRStateMachineTest {
         when(cms.scheduleJob(any(), any(), any())).thenReturn(WRITE_RESULT);
         when(cms.getMessage()).thenReturn(right(OK.name()), right(""));
         when(cms.signalRedy()).thenReturn(WRITE_RESULT);
-        final StateMachine<LRRInternalState, String> stateMachine = new LRRStateMachine(cms);
+        final LRRStateMachine stateMachine = new LRRStateMachine(cms);
         stateMachine.accept("JOBN 2142 12 750 4 250 800");
         stateMachine.accept("JOBN 2142 13 750 4 250 800");
         stateMachine.accept("JOBN 2142 14 750 4 250 800");
@@ -112,7 +112,7 @@ class LRRStateMachineTest {
                 generateServerStateItem("type", 3)
         );
         when(cms.getServerState()).thenReturn(right(config));
-        final StateMachine<LRRInternalState, String> stateMachine = new LRRStateMachine(cms);
+        final LRRStateMachine stateMachine = new LRRStateMachine(cms);
         stateMachine.accept("NONE");
         assertRight(
                 LRRInternalState.createFinalInternalStateFactory("type").f(-1, -1),
@@ -128,7 +128,7 @@ class LRRStateMachineTest {
                 generateServerStateItem("type", 3)
         );
         when(cms.getServerState()).thenReturn(right(config));
-        final StateMachine<LRRInternalState, String> stateMachine = new LRRStateMachine(cms);
+        final LRRStateMachine stateMachine = new LRRStateMachine(cms);
         stateMachine.accept(MessageParser.InboudMessage.JCPL.name());
         verify(cms).signalRedy();
         assertRight(

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import xyz.jamesnuge.Pair;
 import xyz.jamesnuge.messaging.ClientMessagingService;
 
 import static fj.data.Either.*;
@@ -43,7 +44,10 @@ class SchedulingServiceTest {
 
     @Test
     public void shouldRunAlgorithmToFinalState() {
-        service = new SchedulingService(cms, singletonMap("test", TestStateMachine::new));
+        service = new SchedulingService(cms, singletonMap("test", (AlgorithmFactory<TestState>)(cms) -> Pair.of(
+                new TestStateMachine(cms),
+                right(new TestState(false))
+        )));
         when(cms.loginToServer(any())).thenReturn(WRITE_RESULT);
         when(cms.beginScheduling()).thenReturn(WRITE_RESULT);
         when(cms.quit()).thenReturn(WRITE_RESULT);
@@ -87,13 +91,13 @@ class SchedulingServiceTest {
         public TestStateMachine(ClientMessagingService _cms) {}
 
         @Override
-        public void accept(final String trigger) {
+        public Either<String, TestState> accept(final String trigger, TestState state) {
             if (trigger.equals("finished")) {
                 this.currentState = right(FINISHED_STATE);
             }
+            return right(state);
         }
 
-        @Override
         public Either<String, TestState> getCurrentState() {
             return currentState;
         }

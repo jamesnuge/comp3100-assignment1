@@ -28,7 +28,7 @@ public class LRRInternalState implements State {
     }
 
 
-    private LRRInternalState(Integer lastAssignedServerId, String serverType, Integer numberOfServers, Boolean isFinalState) {
+    public LRRInternalState(Integer lastAssignedServerId, String serverType, Integer numberOfServers, Boolean isFinalState) {
         this.lastAssignedServerId = lastAssignedServerId;
         this.serverType = serverType;
         this.numberOfServers = numberOfServers;
@@ -50,6 +50,10 @@ public class LRRInternalState implements State {
     @Override
     public Boolean isFinalState() {
         return isFinalState;
+    }
+
+    public LRRInternalState copyWithServerTypeAndNumberOfServers(final Integer lastAssignedServerId, Boolean isFinalState) {
+        return new LRRInternalState(lastAssignedServerId, this.getServerType(), this.getNumberOfServers(), isFinalState);
     }
 
     @Override

@@ -8,7 +8,6 @@ import xyz.jamesnuge.MessageParser;
 import xyz.jamesnuge.Pair;
 import xyz.jamesnuge.Util;
 import xyz.jamesnuge.messaging.ClientMessagingService;
-import xyz.jamesnuge.scheduling.StateMachine;
 import xyz.jamesnuge.state.ServerStateItem;
 
 import static fj.Ord.on;
@@ -20,7 +19,7 @@ import static xyz.jamesnuge.Util.chain;
 import static xyz.jamesnuge.Util.flatMap;
 import static xyz.jamesnuge.Util.tryEither;
 
-public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
+public class LRRStateMachine {
 
     private final String largestServerType;
     private final ClientMessagingService clientMessagingService;
@@ -47,7 +46,6 @@ public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
     }
 
 
-    @Override
     public void accept(String trigger) {
         if (trigger.contains(MessageParser.InboudMessage.JOBN.name())) {
             this.currentState = Util.flatMap(
@@ -84,7 +82,6 @@ public class LRRStateMachine implements StateMachine<LRRInternalState, String> {
         return config.maximum(ordDef(on(ServerStateItem::getCores, Ord.intOrd))).getType();
     }
 
-    @Override
     public Either<String, LRRInternalState> getCurrentState() {
         return currentState;
     }
