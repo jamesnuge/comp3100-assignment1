@@ -2,10 +2,8 @@ package xyz.jamesnuge;
 
 import fj.data.Either;
 import fj.data.Option;
-import java.util.Map;
 import xyz.jamesnuge.messaging.ClientMessagingService;
 import xyz.jamesnuge.scheduling.SchedulingService;
-import xyz.jamesnuge.scheduling.lrr.LRRStateMachine;
 import xyz.jamesnuge.scheduling.lrr.LrrFactory;
 
 import static xyz.jamesnuge.SocketClientSystemFactory.generateClientSystem;
@@ -22,7 +20,7 @@ public class Main {
             if (maybeMessagingSystem.isSome()) {
                 final SchedulingService service = new SchedulingService(
                         maybeMessagingSystem.some(),
-                        mapOf("LRR", new LrrFactory())
+                        mapOf("LRR", Pair.of(LrrFactory.STATE_MACHINE, LrrFactory.CONFIGURATION))
                 );
                 final Either<String, String> result = chain(
                         service.scheduleJobsUsingAlgorithm("LRR"),

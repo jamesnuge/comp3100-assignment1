@@ -14,9 +14,9 @@ import static xyz.jamesnuge.Util.flatMap;
 public class SchedulingService {
 
     private final ClientMessagingService clientMessagingService;
-    private final Map<String, AlgorithmFactory<? extends State>> algorithms;
+    private final Map<String, Pair<StateMachineFactory<? extends State>, StateConfigurationFactory<? extends State>>> algorithms;
 
-    public SchedulingService(final ClientMessagingService clientMessagingService, Map<String, AlgorithmFactory<? extends State>> algorithms) {
+    public SchedulingService(final ClientMessagingService clientMessagingService, Map<String, Pair<StateMachineFactory<? extends State>, StateConfigurationFactory<? extends State>>> algorithms) {
         this.clientMessagingService = clientMessagingService;
         this.algorithms = algorithms;
     }
@@ -28,10 +28,11 @@ public class SchedulingService {
                     (s) -> clientMessagingService.beginScheduling(),
                     (_s) -> clientMessagingService.getMessage(),
                     (s) -> {
-                        Pair<? extends StateMachine<? extends State, String>, ? extends Either<String, ? extends State>> stateMachineAndState = algorithms.get(algorithm).createAlgorithm(clientMessagingService);
+                        StateMachine<? extends State, String> stateMachine = algorithms.get(algorithm).getLeft().createStateMachine(clientMessagingService);
+                        Either<String, ? extends State> eitherState = algorithms.get(algorithm).getRight().createInitialState(clientMessagingService);
                         return flatMap(
-                                stateMachineAndState.getValue(),
-                                (state) -> process((StateMachine)stateMachineAndState.getLeft(), state, s)
+                                eitherState,
+                                (state) -> process((StateMachine)stateMachine, state, s)
                         );
                     },
                     (_s) -> clientMessagingService.quit(),

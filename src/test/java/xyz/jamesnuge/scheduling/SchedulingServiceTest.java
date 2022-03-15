@@ -1,12 +1,16 @@
 package xyz.jamesnuge.scheduling;
 
 import fj.data.Either;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import xyz.jamesnuge.Pair;
 import xyz.jamesnuge.messaging.ClientMessagingService;
+import xyz.jamesnuge.scheduling.lrr.LRRInternalState;
 
 import static fj.data.Either.*;
 import static java.util.Collections.emptyMap;
@@ -43,11 +47,16 @@ class SchedulingServiceTest {
     }
 
     @Test
+    @Timeout(value = 100L, unit = TimeUnit.MILLISECONDS)
     public void shouldRunAlgorithmToFinalState() {
-        service = new SchedulingService(cms, singletonMap("test", (AlgorithmFactory<TestState>)(cms) -> Pair.of(
-                new TestStateMachine(cms),
-                right(new TestState(false))
-        )));
+        service = new SchedulingService(
+                cms,
+                singletonMap("test", Pair.of(
+                                STATE_FACTORY,
+                                (c) -> Either.right(new TestState(false))
+                        )
+                )
+        );
         when(cms.loginToServer(any())).thenReturn(WRITE_RESULT);
         when(cms.beginScheduling()).thenReturn(WRITE_RESULT);
         when(cms.quit()).thenReturn(WRITE_RESULT);
@@ -71,7 +80,7 @@ class SchedulingServiceTest {
     static class TestState implements State {
         private final Boolean isFinalState;
 
-        TestState(final Boolean isFinalState) {
+        public TestState(final Boolean isFinalState) {
             this.isFinalState = isFinalState;
         }
 
@@ -81,26 +90,8 @@ class SchedulingServiceTest {
         }
     }
 
-    static class TestStateMachine implements StateMachine<TestState, String> {
-
-        private static final TestState FINISHED_STATE = new TestState(true);
-        private static final TestState INCOMPLETE_STATE = new TestState(false);
-
-        private Either<String, TestState> currentState = right(INCOMPLETE_STATE);
-
-        public TestStateMachine(ClientMessagingService _cms) {}
-
-        @Override
-        public Either<String, TestState> accept(final String trigger, TestState state) {
-            if (trigger.equals("finished")) {
-                this.currentState = right(FINISHED_STATE);
-            }
-            return right(state);
-        }
-
-        public Either<String, TestState> getCurrentState() {
-            return currentState;
-        }
-    }
+    private final StateMachineFactory<TestState> STATE_FACTORY = (cms) -> (trigger, state) -> {
+        return trigger.equals("finished") ? right(new TestState(true)) : right(state);
+    };
 
 }
