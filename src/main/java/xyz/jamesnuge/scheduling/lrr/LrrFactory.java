@@ -14,6 +14,7 @@ import static xyz.jamesnuge.MessageParser.Message.OK;
 import static xyz.jamesnuge.Util.chain;
 
 public class LrrFactory {
+
     public static final StateMachineFactory<LRRInternalState> STATE_MACHINE = (cms) -> (message, currentState) -> {
         // New job message
         if (message.contains(MessageParser.InboudMessage.JOBN.name())) {
