@@ -49,3 +49,10 @@ gradle/
 
 ds-system.xml
 ds-jobs.xml
+
+report/*.aux
+report/*.log
+report/*.pdf
+report/*.bbl
+report/*.blg
+report/*.gz
