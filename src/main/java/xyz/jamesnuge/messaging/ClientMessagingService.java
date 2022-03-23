@@ -1,15 +1,5 @@
 package xyz.jamesnuge.messaging;
 
-import fj.data.Either;
-import fj.data.List;
-import fj.data.Option;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import xyz.jamesnuge.MessageParser;
-import xyz.jamesnuge.MessageParser.InboudMessage;
-import xyz.jamesnuge.MessageParser.Message;
-import xyz.jamesnuge.state.ServerStateItem;
-
 import static fj.data.Either.left;
 import static fj.data.List.list;
 import static fj.data.List.nil;
@@ -22,23 +12,37 @@ import static xyz.jamesnuge.MessageParser.Message.SCHD;
 import static xyz.jamesnuge.Util.chain;
 import static xyz.jamesnuge.Util.toOption;
 
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+import fj.data.Either;
+import fj.data.List;
+import fj.data.Option;
+import xyz.jamesnuge.MessageParser;
+import xyz.jamesnuge.MessageParser.InboudMessage;
+import xyz.jamesnuge.MessageParser.Message;
+import xyz.jamesnuge.state.ServerStateItem;
+
 public class ClientMessagingService {
 
     private final Function<String, Either<String, String>> write;
     private final Supplier<Either<String, String>> read;
+    private final Runnable finish;
 
-    public ClientMessagingService(final Function<String, Either<String, String>> write, final Supplier<Either<String, String>> read) {
+    public ClientMessagingService(final Function<String, Either<String, String>> write,
+            final Supplier<Either<String, String>> read, final Runnable finish) {
         this.write = write;
         this.read = read;
+        this.finish = finish;
     }
 
     public Either<String, List<ServerStateItem>> getServerState(ConfigRequest configRequest) {
         final Either<String, String> chain = chain(
                 (s) -> sendMessage(configRequest.constructServerMessage()),
                 (s) -> getMessage(InboudMessage.DATA),
-                (s) -> sendMessage(Message.OK)
-        );
-        final Either<String, List<ServerStateItem>> serverState = chain.rightMap((s) -> readMessages().map(ServerStateItem::parseFromString));
+                (s) -> sendMessage(Message.OK));
+        final Either<String, List<ServerStateItem>> serverState = chain
+                .rightMap((s) -> readMessages().map(ServerStateItem::parseFromString));
         Either<String, String> okMessage = sendMessage(OK);
         if (okMessage.isLeft()) {
             return left(okMessage.left().value());
@@ -49,9 +53,7 @@ public class ClientMessagingService {
 
     private List<String> readMessages() {
         Option<String> maybeMessage = toOption(getMessage());
-        return maybeMessage.isSome() ?
-                list(maybeMessage.some()).append(readMessages()) :
-                nil();
+        return maybeMessage.isSome() ? list(maybeMessage.some()).append(readMessages()) : nil();
     }
 
     public Either<String, List<ServerStateItem>> getServerState() {
@@ -63,8 +65,7 @@ public class ClientMessagingService {
                 (_s) -> sendMessage(HELO),
                 (s) -> getMessage(Message.OK),
                 (s) -> sendMessage("AUTH " + userName),
-                (s) -> getMessage(Message.OK)
-        );
+                (s) -> getMessage(Message.OK));
     }
 
     public Either<String, String> beginScheduling() {
@@ -104,6 +105,7 @@ public class ClientMessagingService {
     }
 
     public Either<String, String> quit() {
+        finish.run();
         return sendMessage(QUIT);
     }
 }

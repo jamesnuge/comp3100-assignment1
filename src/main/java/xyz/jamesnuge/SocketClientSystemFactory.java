@@ -18,9 +18,8 @@ public class SocketClientSystemFactory {
     }
 
     public static Option<ClientMessagingService> generateClientSystem(String host, Integer port) {
-        System.out.println("Connect to server...");
+        System.out.println("Connecting to server...");
         try {
-            // TODO: Add closing method to CMS that will close the socket
             final Socket socket = new Socket(host, port);
             System.out.println("Connected to server");
             final InputStream is = socket.getInputStream();
@@ -42,6 +41,13 @@ public class SocketClientSystemFactory {
                             }
                         } catch (IOException e) {
                             return Either.left(e.getMessage());
+                        }
+                    },
+                    () -> {
+                        try {
+                            socket.close();
+                        } catch (IOException e) {
+                            System.out.println("Unable to close socket: " + e.getMessage());
                         }
                     }
             ));

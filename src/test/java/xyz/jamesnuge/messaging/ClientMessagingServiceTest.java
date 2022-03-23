@@ -34,6 +34,9 @@ class ClientMessagingServiceTest {
     @Mock
     Supplier<Either<String, String>> readMock;
 
+    @Mock
+    Runnable finishMock;
+
     @InjectMocks
     ClientMessagingService clientMessagingService;
 
@@ -104,10 +107,12 @@ class ClientMessagingServiceTest {
     public void testQuitSendsMessage() {
         final Either<String, String> schedulingResult = clientMessagingService.quit();
         verify(writeMock).apply(eq("QUIT"));
+        verify(finishMock).run();
         assertRight(
                 "write",
                 schedulingResult
         );
     }
+
 
 }
