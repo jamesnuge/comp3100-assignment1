@@ -16,8 +16,7 @@ import static xyz.jamesnuge.Util.chain;
 public class LrrFactory {
 
     public static final StateMachineFactory<LRRInternalState> STATE_MACHINE = (cms) -> (message, currentState) -> {
-        // New job message
-        if (message.contains(MessageParser.InboudMessage.JOBN.name())) {
+        if (message.contains(MessageParser.InboudMessage.JOBN.name())) { // New job message
             final List<String> params = List.list(message.substring(5).split(" "));
             final Integer nextServerId = getNextServerId(currentState);
             return chain(
@@ -25,16 +24,13 @@ public class LrrFactory {
                     (_s) -> cms.getMessage(),
                     (s) -> s.equals(OK.name()) ? cms.signalRedy() : chain(cms.getMessage(), (_s) -> cms.signalRedy())
             ).rightMap((_s) -> currentState.copyWithServerTypeAndNumberOfServers(nextServerId, false));
-        } else if (message.contains(MessageParser.InboudMessage.RESF.name())) {
+        } else if (message.contains(MessageParser.InboudMessage.RESF.name())) { // Server failure message (Out of scope for assignment - NOOP)
             return right(currentState);
-        } else if (message.contains(MessageParser.InboudMessage.JCPL.name())) {
-            // Job completion message
+        } else if (message.contains(MessageParser.InboudMessage.JCPL.name())) { // Job completion message
             return cms.signalRedy().rightMap((_s) -> currentState);
-        } else if (message.contains(MessageParser.InboudMessage.NONE.name())) {
-            // Finished message
+        } else if (message.contains(MessageParser.InboudMessage.NONE.name())) { // Finished message
             return right(new LRRInternalState(-1, "", -1, true));
-        } else {
-            // If any other message perform a NOOP
+        } else { // Unknown message - Perform NOOP
             return right(currentState);
         }
     };

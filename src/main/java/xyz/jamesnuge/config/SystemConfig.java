@@ -8,6 +8,8 @@
 
 package xyz.jamesnuge.config;
 
+import java.util.Comparator;
+
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -40,6 +42,10 @@ import jakarta.xml.bind.annotation.XmlType;
 })
 @XmlRootElement(name = "system")
 public class SystemConfig {
+
+    public static String getHighestCapacityServerType(SystemConfig config) {
+        return config.servers.server.stream().max(Comparator.comparingInt(Server::getCores)).get().getType();
+    }
 
     @XmlElement(required = true)
     protected Servers servers;

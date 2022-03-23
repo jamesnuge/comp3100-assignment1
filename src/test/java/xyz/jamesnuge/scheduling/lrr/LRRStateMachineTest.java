@@ -34,18 +34,6 @@ class LRRStateMachineTest {
         MockitoAnnotations.openMocks(this);
     }
 
-//    @Test
-//    public void testStateMachineConstructsWithCorrectInitialState() throws Exception {
-//        final List<ServerStateItem> config = list(SERVER_STATE_ITEM);
-//        when(cms.getServerState()).thenReturn(right(config));
-//        Pair<StateMachine<LRRInternalState, String>, Either<String, LRRInternalState>> stateMachineAndInitialState = LrrFactory.c.createAlgorithm(cms);
-//        assertRight(
-//                LRRInternalState.createInternalStateFactory("type1").f(-1, 1),
-//                stateMachineAndInitialState.getRight()
-//        );
-//        verify(cms).getServerState();
-//    }
-
     @Test
     public void shouldPerformNoopIfTriggerUnknown() throws Exception {
         final List<ServerStateItem> config = list(
@@ -76,7 +64,7 @@ class LRRStateMachineTest {
                 new LRRInternalState(0, "type", 2, false)
         );
         assertRight(
-                LRRInternalState.createInternalStateFactory("type").f(1, 2),
+                new LRRInternalState(1, "type", 2, false),
                 currentState
         );
         verify(cms).scheduleJob(eq(12), eq("type"), eq(1));
@@ -95,7 +83,7 @@ class LRRStateMachineTest {
 
         Either<String, LRRInternalState> currentState = performAction("JOBN 2142 12 750 4 250 800", new LRRInternalState(1, "type", 2, false));
         assertRight(
-                LRRInternalState.createInternalStateFactory("type").f(0, 2),
+                new LRRInternalState(0, "type", 2, false),
                 currentState
         );
         verify(cms).scheduleJob(eq(12), eq("type"), eq(0));
@@ -111,7 +99,7 @@ class LRRStateMachineTest {
         when(cms.getServerState()).thenReturn(right(config));
         Either<String, LRRInternalState> currentState = performActionWithInitialState("NONE");
         assertRight(
-                LRRInternalState.createFinalInternalStateFactory("").f(-1, -1),
+                new LRRInternalState(-1, "", -1, true),
                 currentState
         );
     }
@@ -127,7 +115,7 @@ class LRRStateMachineTest {
         when(cms.signalRedy()).thenReturn(WRITE_RESULT);
         Either<String, LRRInternalState> currentState = performActionWithInitialState(MessageParser.InboudMessage.JCPL.name());
         assertRight(
-                LRRInternalState.createInternalStateFactory("type").f(-1, 3),
+                new LRRInternalState(-1, "type", 3, false),
                 currentState
         );
         verify(cms).signalRedy();
