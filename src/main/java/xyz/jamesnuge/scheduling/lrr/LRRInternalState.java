@@ -1,10 +1,9 @@
 package xyz.jamesnuge.scheduling.lrr;
 
-import fj.F;
-import fj.data.List;
-import fj.function.Try2;
-import fj.function.Try3;
 import java.util.Objects;
+
+import fj.F;
+import fj.function.Try2;
 import xyz.jamesnuge.scheduling.State;
 
 

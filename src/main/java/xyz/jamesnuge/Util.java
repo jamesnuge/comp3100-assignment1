@@ -1,9 +1,8 @@
 package xyz.jamesnuge;
 
-import fj.Try;
-import fj.data.Either;
-import fj.data.Option;
-import fj.function.Try0;
+import static fj.data.Either.left;
+import static fj.data.Either.right;
+
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -15,11 +14,12 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+
+import fj.data.Either;
+import fj.data.Option;
+import fj.function.Try0;
 import net.time4j.SystemClock;
 import net.time4j.TemporalType;
-
-import static fj.data.Either.left;
-import static fj.data.Either.right;
 
 public class Util {
 

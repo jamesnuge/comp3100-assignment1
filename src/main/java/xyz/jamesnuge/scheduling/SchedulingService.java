@@ -1,15 +1,15 @@
 package xyz.jamesnuge.scheduling;
 
-import fj.data.Either;
-import java.util.Map;
-import java.util.function.Function;
-import xyz.jamesnuge.Pair;
-import xyz.jamesnuge.messaging.ClientMessagingService;
-
 import static fj.data.Either.left;
 import static fj.data.Either.right;
 import static xyz.jamesnuge.Util.chain;
 import static xyz.jamesnuge.Util.flatMap;
+
+import java.util.Map;
+
+import fj.data.Either;
+import xyz.jamesnuge.Pair;
+import xyz.jamesnuge.messaging.ClientMessagingService;
 
 public class SchedulingService {
 
@@ -21,6 +21,7 @@ public class SchedulingService {
         this.algorithms = algorithms;
     }
 
+    @SuppressWarnings("unchecked")
     public Either<String, String> scheduleJobsUsingAlgorithm(String algorithm) {
         if (algorithms.containsKey(algorithm)) {
             return chain(
@@ -32,7 +33,7 @@ public class SchedulingService {
                         Either<String, ? extends State> eitherState = algorithms.get(algorithm).getRight().createInitialState(clientMessagingService);
                         return flatMap(
                                 eitherState,
-                                (state) -> process((StateMachine)stateMachine, state, s)
+                                (state) -> process((StateMachine<State, String>)stateMachine, state, s)
                         );
                     },
                     (_s) -> clientMessagingService.quit(),

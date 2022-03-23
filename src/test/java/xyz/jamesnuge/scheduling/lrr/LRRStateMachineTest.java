@@ -1,16 +1,5 @@
 package xyz.jamesnuge.scheduling.lrr;
 
-import fj.data.Either;
-import fj.data.List;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import xyz.jamesnuge.MessageParser;
-import xyz.jamesnuge.messaging.ClientMessagingService;
-import xyz.jamesnuge.scheduling.StateMachine;
-import xyz.jamesnuge.state.ServerStateItem;
-
 import static fj.data.Either.right;
 import static fj.data.List.list;
 import static org.mockito.ArgumentMatchers.any;
@@ -21,6 +10,18 @@ import static xyz.jamesnuge.MessageParser.Message.OK;
 import static xyz.jamesnuge.Util.flatMap;
 import static xyz.jamesnuge.fixtures.ServerStateItemFixtures.generateServerStateItem;
 import static xyz.jamesnuge.util.TestUtil.assertRight;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import fj.data.Either;
+import fj.data.List;
+import xyz.jamesnuge.MessageParser;
+import xyz.jamesnuge.messaging.ClientMessagingService;
+import xyz.jamesnuge.scheduling.StateMachine;
+import xyz.jamesnuge.state.ServerStateItem;
 
 class LRRStateMachineTest {
 
@@ -50,6 +51,7 @@ class LRRStateMachineTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testStateMachineAssignsJobToTheNextAvailableMachine() throws Exception {
         final List<ServerStateItem> config = list(
                 generateServerStateItem("type", 1),
@@ -71,6 +73,7 @@ class LRRStateMachineTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testStateMachineLoopsBackOnceAllServersHaveBeenAssignedAJob() throws Exception {
         final List<ServerStateItem> config = list(
                 generateServerStateItem("type", 1),

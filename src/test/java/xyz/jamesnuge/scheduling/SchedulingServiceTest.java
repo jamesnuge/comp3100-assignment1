@@ -1,18 +1,6 @@
 package xyz.jamesnuge.scheduling;
 
-import fj.data.Either;
-import java.util.concurrent.TimeUnit;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import xyz.jamesnuge.Pair;
-import xyz.jamesnuge.messaging.ClientMessagingService;
-import xyz.jamesnuge.scheduling.lrr.LRRInternalState;
-
-import static fj.data.Either.*;
+import static fj.data.Either.right;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 import static org.mockito.ArgumentMatchers.any;
@@ -21,6 +9,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static xyz.jamesnuge.util.TestUtil.assertLeft;
 import static xyz.jamesnuge.util.TestUtil.assertRight;
+
+import java.util.concurrent.TimeUnit;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import fj.data.Either;
+import xyz.jamesnuge.Pair;
+import xyz.jamesnuge.messaging.ClientMessagingService;
 
 class SchedulingServiceTest {
 
@@ -48,6 +48,7 @@ class SchedulingServiceTest {
 
     @Test
     @Timeout(value = 100L, unit = TimeUnit.MILLISECONDS)
+    @SuppressWarnings("unchecked")
     public void shouldRunAlgorithmToFinalState() {
         service = new SchedulingService(
                 cms,

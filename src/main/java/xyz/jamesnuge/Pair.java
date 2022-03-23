@@ -13,7 +13,7 @@ public class Pair<L, R> implements Map.Entry<L, R> {
     }
 
     public static <L, R> Pair<L, R> of(L l, R r) {
-        return new Pair(l, r);
+        return new Pair<>(l, r);
     }
 
     public L getLeft() {
