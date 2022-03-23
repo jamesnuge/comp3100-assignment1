@@ -56,7 +56,7 @@ class LRRStateMachineTest {
         when(cms.scheduleJob(any(), any(), any())).thenReturn(WRITE_RESULT);
         Either<String, LRRInternalState> currentState = performActionWithInitialState("fjsadjfhaskljdhf");
         assertRight(
-                LRRInternalState.createInternalStateFactory("type").f(-1, 2),
+                new LRRInternalState(-1,"type", 2, false),
                 currentState
         );
     }
