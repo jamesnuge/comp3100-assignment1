@@ -3,6 +3,7 @@ package xyz.jamesnuge.scheduling;
 import static fj.data.Either.right;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -15,7 +16,9 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.mockito.InOrder;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import fj.data.Either;
@@ -76,23 +79,53 @@ class SchedulingServiceTest {
         verify(cms).loginToServer(any());
         verify(cms).beginScheduling();
         verify(cms, times(4)).getMessage();
+        verify(cms).quit();
     }
 
-    static class TestState implements State {
-        private final Boolean isFinalState;
-
-        public TestState(final Boolean isFinalState) {
-            this.isFinalState = isFinalState;
-        }
-
-        @Override
-        public Boolean isFinalState() {
-            return isFinalState;
-        }
+    @Test
+    public void testSchedulingServiceUsesNewStateOnEachAlgorithmCall() {
+        StateMachine<TestState, String> algorithm = new CounterAlgorithm();
+        StateMachine<TestState, String> algorithmSpy = Mockito.spy(algorithm);
+        StateMachineFactory<TestState> counterAlgorithm = (cms) -> algorithmSpy;
+        service = new SchedulingService(
+                cms,
+                singletonMap("test", Pair.of(
+                                counterAlgorithm,
+                                (c) -> Either.right(new TestState(false, 0))
+                        )
+                )
+        );
+        when(cms.loginToServer(any())).thenReturn(WRITE_RESULT);
+        when(cms.beginScheduling()).thenReturn(WRITE_RESULT);
+        when(cms.quit()).thenReturn(WRITE_RESULT);
+        when(cms.getMessage()).thenReturn(
+                right("1"),
+                right("2"),
+                right("finished")
+        );
+        InOrder inOrder = Mockito.inOrder(algorithmSpy);
+        final Either<String, String> schedulingResult = service.scheduleJobsUsingAlgorithm("test");
+        assertTrue(schedulingResult.isRight());
+        inOrder.verify(algorithmSpy).accept("1", new TestState(false, 0));
+        inOrder.verify(algorithmSpy).accept("2", new TestState(false, 1));
+        inOrder.verify(algorithmSpy).accept("finished", new TestState(false, 2));
     }
 
     private final StateMachineFactory<TestState> STATE_FACTORY = (cms) -> (trigger, state) -> {
         return trigger.equals("finished") ? right(new TestState(true)) : right(state);
     };
+
+    // Using proper class instead of lambda because Mockito.spy doesn't work with lambdas
+    static class CounterAlgorithm implements StateMachine<TestState, String> {
+
+        @Override
+        public Either<String, TestState> accept(String trigger, TestState currentState) {
+            return Either.right(
+                    trigger.equals("finished") ?
+                            new TestState(true, currentState.getCounter()) :
+                            new TestState(false, currentState.getCounter() + 1)
+            );
+        }
+    }
 
 }

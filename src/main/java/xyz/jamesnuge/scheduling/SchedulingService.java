@@ -51,6 +51,7 @@ public class SchedulingService {
         } else {
             State state = accept.right().value();
             if (state.isFinalState()) {
+                // clientMessagingService.quit();
                 return right("Successfully ran algorithm");
             } else {
                 return run(stateMachine, state);
@@ -59,17 +60,18 @@ public class SchedulingService {
     }
 
     private Either<String, String> run(StateMachine<State, String> stateMachine, State state) {
+        State currentState = state;
         while (true) {
             Either<String, String> message = clientMessagingService.getMessage();
             if (message.isLeft()) {
                 return message;
             } else {
-                Either<String, ? extends State> accept = stateMachine.accept(message.right().value(), state);
+                Either<String, ? extends State> accept = stateMachine.accept(message.right().value(), currentState);
                 if (accept.isLeft()) {
                     return left("Failed to process message: " + message + ". " + accept.left().value());
                 } else {
-                    State value = accept.right().value();
-                    if (value.isFinalState()) {
+                    currentState = accept.right().value();
+                    if (currentState.isFinalState()) {
                         return right("Successfully ran algorithm");
                     }
                 }
