@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import fj.data.Either;
@@ -105,11 +106,14 @@ class ClientMessagingServiceTest {
 
     @Test
     public void testQuitSendsMessage() {
+        InOrder inOrder = Mockito.inOrder(readMock, writeMock, finishMock);
+        when(readMock.get()).thenReturn(right("QUIT"));
         final Either<String, String> schedulingResult = clientMessagingService.quit();
-        verify(writeMock).apply(eq("QUIT"));
-        verify(finishMock).run();
+        inOrder.verify(writeMock).apply(eq("QUIT"));
+        inOrder.verify(readMock).get();
+        inOrder.verify(finishMock).run();
         assertRight(
-                "write",
+                "Successfully closed ClientMessagingService",
                 schedulingResult
         );
     }

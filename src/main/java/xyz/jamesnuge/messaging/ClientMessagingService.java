@@ -1,6 +1,7 @@
 package xyz.jamesnuge.messaging;
 
 import static fj.data.Either.left;
+import static fj.data.Either.right;
 import static fj.data.List.list;
 import static fj.data.List.nil;
 import static xyz.jamesnuge.MessageParser.Message.HELO;
@@ -30,7 +31,7 @@ public class ClientMessagingService {
     private final Runnable finish;
 
     public ClientMessagingService(final Function<String, Either<String, String>> write,
-            final Supplier<Either<String, String>> read, final Runnable finish) {
+                                  final Supplier<Either<String, String>> read, final Runnable finish) {
         this.write = write;
         this.read = read;
         this.finish = finish;
@@ -88,6 +89,17 @@ public class ClientMessagingService {
         return MessageParser.getMessage(read);
     }
 
+    public Either<String, String> quit() {
+        return chain(
+                sendMessage(QUIT),
+                (s) -> getMessage(QUIT),
+                (_s) -> {
+                    finish.run();
+                    return right("Successfully closed ClientMessagingService");
+                }
+        );
+    }
+
     Either<String, String> sendMessage(Message message) {
         return this.sendMessage(message.name());
     }
@@ -104,8 +116,4 @@ public class ClientMessagingService {
         return MessageParser.getMessage(read, message.name());
     }
 
-    public Either<String, String> quit() {
-        finish.run();
-        return sendMessage(QUIT);
-    }
 }
