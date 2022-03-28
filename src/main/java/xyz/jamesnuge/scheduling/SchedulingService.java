@@ -8,6 +8,7 @@ import static xyz.jamesnuge.Util.flatMap;
 import java.util.Map;
 
 import fj.data.Either;
+import java.util.function.BiFunction;
 import xyz.jamesnuge.Pair;
 import xyz.jamesnuge.messaging.ClientMessagingService;
 
@@ -33,7 +34,7 @@ public class SchedulingService {
                         Either<String, ? extends State> eitherState = algorithms.get(algorithm).getRight().createInitialState(clientMessagingService);
                         return flatMap(
                                 eitherState,
-                                (state) -> process((StateMachine<State, String>)stateMachine, state, s)
+                                (state) -> run((StateMachine<State, String>)stateMachine, state, s)
                         );
                     },
                     (_s) -> clientMessagingService.quit(),
@@ -44,25 +45,10 @@ public class SchedulingService {
         }
     }
 
-    private Either<String, String> process(StateMachine<State, String> stateMachine, State initialState, String message) {
-        Either<String, ? extends State> accept = stateMachine.accept(message, initialState);
-        if (accept.isLeft()) {
-            return left("Failed to process message: " + message);
-        } else {
-            State state = accept.right().value();
-            if (state.isFinalState()) {
-                // clientMessagingService.quit();
-                return right("Successfully ran algorithm");
-            } else {
-                return run(stateMachine, state);
-            }
-        }
-    }
-
-    private Either<String, String> run(StateMachine<State, String> stateMachine, State state) {
+    private Either<String, String> run(StateMachine<State, String> stateMachine, State state, String initialMessage) {
         State currentState = state;
+        Either<String, String> message = right(initialMessage);
         while (true) {
-            Either<String, String> message = clientMessagingService.getMessage();
             if (message.isLeft()) {
                 return message;
             } else {
@@ -76,6 +62,7 @@ public class SchedulingService {
                     }
                 }
             }
+            message = clientMessagingService.getMessage();
         }
     }
 
