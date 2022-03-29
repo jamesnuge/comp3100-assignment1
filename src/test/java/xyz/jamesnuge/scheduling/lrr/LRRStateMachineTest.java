@@ -43,7 +43,7 @@ class LRRStateMachineTest {
         );
         when(cms.getServerState()).thenReturn(right(config));
         when(cms.scheduleJob(any(), any(), any())).thenReturn(WRITE_RESULT);
-        Either<String, LRRInternalState> currentState = performActionWithInitialState("fjsadjfhaskljdhf");
+        Either<String, LRRInternalState> currentState = performActionWithInitialState("fjsadjfhaskljdhf", "type", 2);
         assertRight(
                 new LRRInternalState(-1,"type", 2, false),
                 currentState
@@ -75,11 +75,6 @@ class LRRStateMachineTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testStateMachineLoopsBackOnceAllServersHaveBeenAssignedAJob() throws Exception {
-        final List<ServerStateItem> config = list(
-                generateServerStateItem("type", 1),
-                generateServerStateItem("type", 2)
-        );
-        when(cms.getServerState()).thenReturn(right(config));
         when(cms.scheduleJob(any(), any(), any())).thenReturn(WRITE_RESULT);
         when(cms.getMessage()).thenReturn(right(OK.name()), right(""));
         when(cms.signalRedy()).thenReturn(WRITE_RESULT);
@@ -94,13 +89,7 @@ class LRRStateMachineTest {
 
     @Test
     public void testStateShouldShouldReturnFinalStateOnNone() throws Exception {
-        final List<ServerStateItem> config = list(
-                generateServerStateItem("type", 1),
-                generateServerStateItem("type", 2),
-                generateServerStateItem("type", 3)
-        );
-        when(cms.getServerState()).thenReturn(right(config));
-        Either<String, LRRInternalState> currentState = performActionWithInitialState("NONE");
+        Either<String, LRRInternalState> currentState = performActionWithInitialState("NONE", "type", 3);
         assertRight(
                 new LRRInternalState(-1, "", -1, true),
                 currentState
@@ -109,14 +98,8 @@ class LRRStateMachineTest {
 
     @Test
     public void testStateShouldNoopJobCompletionMessage() throws Exception {
-        final List<ServerStateItem> config = list(
-                generateServerStateItem("type", 1),
-                generateServerStateItem("type", 2),
-                generateServerStateItem("type", 3)
-        );
-        when(cms.getServerState()).thenReturn(right(config));
         when(cms.signalRedy()).thenReturn(WRITE_RESULT);
-        Either<String, LRRInternalState> currentState = performActionWithInitialState(MessageParser.InboudMessage.JCPL.name());
+        Either<String, LRRInternalState> currentState = performActionWithInitialState(MessageParser.InboudMessage.JCPL.name(), "type", 3);
         assertRight(
                 new LRRInternalState(-1, "type", 3, false),
                 currentState
@@ -124,9 +107,9 @@ class LRRStateMachineTest {
         verify(cms).signalRedy();
     }
 
-    private Either<String, LRRInternalState> performActionWithInitialState(String action) {
+    private Either<String, LRRInternalState> performActionWithInitialState(String action, String serverType, Integer numOfServers) {
         StateMachine<LRRInternalState, String> stateMachine = LrrFactory.STATE_MACHINE.createStateMachine(cms);
-        Either<String, LRRInternalState> state = LrrFactory.CONFIGURATION.createInitialState(cms);
+        Either<String, LRRInternalState> state = right(new LRRInternalState(-1, serverType, numOfServers, false));
         return flatMap(state, (s) -> stateMachine.accept(action, s));
     }
 

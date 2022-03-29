@@ -3,6 +3,7 @@ package xyz.jamesnuge.scheduling.lrr;
 import fj.Ord;
 import fj.data.List;
 import xyz.jamesnuge.MessageParser;
+import xyz.jamesnuge.SystemInformationUtil;
 import xyz.jamesnuge.messaging.NewJobRequest;
 import xyz.jamesnuge.scheduling.StateConfigurationFactory;
 import xyz.jamesnuge.scheduling.StateMachineFactory;
@@ -36,17 +37,18 @@ public class LrrFactory {
         }
     };
 
-    public static final StateConfigurationFactory<LRRInternalState> CONFIGURATION = (cms) -> cms.getServerState().rightMap(
-            (state) -> {
-                String highestCapacityServerType = getHighestCapacityServerType(state);
+    public static final StateConfigurationFactory<LRRInternalState> CONFIGURATION = (cms) -> {
+        return SystemInformationUtil.loadSystemConfig(".").rightMap(
+            (systemInfo) -> {
+                String largestServerType = systemInfo.getServers().getServer().stream().reduce((a, b) -> a.getCores() > b.getCores() ? a : b).get().getType();
                 return new LRRInternalState(
-                        -1,
-                        highestCapacityServerType,
-                        state.filter((server) -> server.getType().equals(highestCapacityServerType)).length(),
-                        false
+                    -1,
+                    largestServerType,
+                    toInt(systemInfo.getServers().getServer().stream().filter((s) -> s.getType().equals(largestServerType)).count()),
+                    false
                 );
-            }
-    );
+            });
+    };
 
     private static Integer getNextServerId(LRRInternalState currentState) {
         return (currentState.getLastAssignedServerId() + 1) % currentState.getNumberOfServers();
@@ -54,5 +56,9 @@ public class LrrFactory {
 
     public static String getHighestCapacityServerType(final List<ServerStateItem> config) {
         return config.maximum(ordDef(on(ServerStateItem::getCores, Ord.intOrd))).getType();
+    }
+
+    private static Integer toInt(long l) {
+        return new Long(l).intValue();
     }
 }
