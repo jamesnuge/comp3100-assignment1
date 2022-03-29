@@ -83,6 +83,7 @@ class SchedulingServiceTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testSchedulingServiceUsesNewStateOnEachAlgorithmCall() {
         StateMachine<TestState, String> algorithm = new CounterAlgorithm();
         StateMachine<TestState, String> algorithmSpy = Mockito.spy(algorithm);

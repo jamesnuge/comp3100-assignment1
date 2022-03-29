@@ -8,7 +8,6 @@ import static xyz.jamesnuge.Util.flatMap;
 import java.util.Map;
 
 import fj.data.Either;
-import java.util.function.BiFunction;
 import xyz.jamesnuge.Pair;
 import xyz.jamesnuge.messaging.ClientMessagingService;
 
@@ -26,7 +25,7 @@ public class SchedulingService {
     public Either<String, String> scheduleJobsUsingAlgorithm(String algorithm) {
         if (algorithms.containsKey(algorithm)) {
             return chain(
-                    clientMessagingService.loginToServer("user"),
+                    clientMessagingService.loginToServer(System.getProperty("user.name")),
                     (s) -> clientMessagingService.beginScheduling(),
                     (_s) -> clientMessagingService.getMessage(),
                     (s) -> {
