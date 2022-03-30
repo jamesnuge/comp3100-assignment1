@@ -2,8 +2,11 @@ package xyz.jamesnuge;
 
 import fj.data.Either;
 import java.io.File;
+import java.util.List;
+
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Unmarshaller;
+import xyz.jamesnuge.config.Server;
 import xyz.jamesnuge.config.SystemConfig;
 
 public class SystemInformationUtil {
@@ -20,6 +23,17 @@ public class SystemInformationUtil {
         } catch (final Exception e) {
             return Either.left(e.getMessage());
         }
+    }
+
+    public static String getLargestServerType(SystemConfig config) {
+        List<Server> servers = config.getServers().getServer();
+        Server largestServer = servers.get(0);
+        for (Server server: servers) {
+            if (server.getCores() > largestServer.getCores()) {
+                largestServer = server;
+            }
+        }
+        return largestServer.getType();
     }
 
 }

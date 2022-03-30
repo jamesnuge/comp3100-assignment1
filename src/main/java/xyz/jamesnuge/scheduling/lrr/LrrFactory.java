@@ -4,6 +4,8 @@ import fj.Ord;
 import fj.data.List;
 import xyz.jamesnuge.MessageParser;
 import xyz.jamesnuge.SystemInformationUtil;
+import xyz.jamesnuge.Util;
+import xyz.jamesnuge.messaging.ConfigRequest;
 import xyz.jamesnuge.messaging.NewJobRequest;
 import xyz.jamesnuge.scheduling.StateConfigurationFactory;
 import xyz.jamesnuge.scheduling.StateMachineFactory;
@@ -38,16 +40,26 @@ public class LrrFactory {
     };
 
     public static final StateConfigurationFactory<LRRInternalState> CONFIGURATION = (cms) -> {
-        return SystemInformationUtil.loadSystemConfig(".").rightMap(
+        return Util.flatMap(
+            SystemInformationUtil.loadSystemConfig("."),
+
             (systemInfo) -> {
-                String largestServerType = systemInfo.getServers().getServer().stream().reduce((a, b) -> a.getCores() > b.getCores() ? a : b).get().getType();
-                return new LRRInternalState(
-                    -1,
-                    largestServerType,
-                    toInt(systemInfo.getServers().getServer().stream().filter((s) -> s.getType().equals(largestServerType)).count()),
-                    false
-                );
-            });
+                String largestServerType = SystemInformationUtil.getLargestServerType(systemInfo);
+                return cms.getServerState(ConfigRequest.createServerTypeConfigRequest(largestServerType)).rightMap((serverState) -> {
+                    return new LRRInternalState(-1, largestServerType, serverState.length(), false);
+                });
+            }
+        );
+        // return SystemInformationUtil.loadSystemConfig(".").rightMap(
+        //     (systemInfo) -> {
+        //         String largestServerType = systemInfo.getServers().getServer().stream().reduce((a, b) -> a.getCores() > b.getCores() ? a : b).get().getType();
+        //         return new LRRInternalState(
+        //             -1,
+        //             largestServerType,
+        //             toInt(systemInfo.getServers().getServer().stream().filter((s) -> s.getType().equals(largestServerType)).count()),
+        //             false
+        //         );
+        //     });
     };
 
     private static Integer getNextServerId(LRRInternalState currentState) {
