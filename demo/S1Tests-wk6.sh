@@ -54,9 +54,6 @@ for arg in $args; do
 	javaArgs+=" $arg"
 done
 
-echo "Printing java args"
-echo $javaArgs
-
 isCArg=0
 for arg in $args; do
 	if [[ $isCArg -eq 1 ]]; then
