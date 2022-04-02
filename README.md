@@ -7,8 +7,8 @@ This project is the implementation of a scheduling client to be used with the se
 The following instructions should allow you to run the client in your local environment
 
 ### Prerequisites
-- Java 8
-- Gradle 4.7.0
+- [Java 8](https://www.oracle.com/java/technologies/java8.html)
+- [Gradle 4.7.x](https://docs.gradle.org/7.4/userguide/userguide.html)
 
 ### Installation and running the client
 
