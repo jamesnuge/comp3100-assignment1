@@ -9,10 +9,22 @@
 The first assignment for COMP3100 involves creating a scheduler to operate in tandem with the ds-sim server application.
 The scheduler would assign jobs using a naive `round robin' algorithm, only allocating to the servers within the largest type as defined by the number of cores each server has.
 The purpose of the assignment was to introduce students to some concepts in distributed systems such as job scheduling, as well as some core java programming concepts such as socket programming.
-\section*{System Overview}
- 
+
 \section*{Design}
-The design for the system was based on 
-\section*{Implementation}
-\section*{Appendix}
+The scheduler for this was designed so that the algorithm for scheduling is separate from the running of the scheduler.
+This decision was made so that the algorithm can be considered to be a simple state machine that will run until it arrives at a final state. 
+With this in mind the client can be considered, at a high level, two separate parts; the scheduler, and the algorithm.
+\newline
+For the scheduler to run it requires 2 components or arguments, a state machine function and an initial state. 
+A state machine function is defined as a function over the incoming message from ds-server and the current state.
+It then returns the new state. THe scheduler then reads in the new message from the server and invokes the function again with the new state.
+This occurs until a state is return that is consider 'finished'. 
+\subsection*{Scheduling Algorithms}
+To make the implementation of algorithms as simple as possible and algorithm only needs to provide 2 things to be run by the scheduler, a transition function, and an initial state.
+The transition function essentially forms a state action or state transition \cite{scala_fp} over a specified 'state type', which contains all the information the algorithm needs to schedule jobs.
+While not in the scope of this project one example of that would be a list of the unavailable/failed servers, so the algorithms could make sure they don't assign jobs to servers that will not process them.
+Another advantage of using a functional programming paradigm is that the state transitions can be built individually and the used in combinators \cite{scala_fp}
+The state object will need to have at least field on it, a boolean, named isFinished. This field will inform the other part of the system whether or not the algorithm has finished.
+\subsubsection*{Last Round Robin}
+The last round robin algorithm is a naive algorithm that simply assigns jobs to the servers with the most CPU's. The 
 \end{document}
