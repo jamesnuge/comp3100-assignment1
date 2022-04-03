@@ -22,6 +22,8 @@ You can pass the algorithm acronym to the client using the '--args' option.
 The ds-server must be run in the same working directory as the client, as it client relies on reading a file based on the root path
 For ease of use, it is recommended that users install [SDKMAN](https://sdkman.io) and create a local environment so that you don't muddy your pre-existing java installations
 
+Note: To run the buildServer script you will need `gcc`, `make` and `libxml2`. The best option is to use the pre-compiled binaries from the [ds-sim](https://github.com/distsys-MQ/ds-sim)
+
 ### Building
 
 To build an uber-jar for use on other machines/environments simply run `gradle build` and copy the jar from 'build/lib'
