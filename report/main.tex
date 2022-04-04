@@ -52,6 +52,27 @@
 \usepackage{rotating} % Rotation tools
 \usepackage{censor} % Facilities for controlling restricted text
 \usepackage{listings, style/lstlisting} % Environment for non-formatted code, !uses style file!
+\usepackage{color}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\lstset{frame=tb,
+  language=Java,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
 \usepackage{pseudocode} % Environment for specifying algorithms in a natural way
 \usepackage{style/avm} % Environment for f-structures, !uses style file!
 \usepackage{booktabs} % Enhances quality of tables
@@ -118,7 +139,7 @@ With this in mind the client can be considered, at a high level, two separate pa
 \newline
 For the scheduler to run it requires 2 components or arguments, a state machine function and an initial state. 
 A state machine function is defined as a function over the incoming message from ds-server and the current state.
-It then returns the new state. THe scheduler then reads in the new message from the server and invokes the function again with the new state.
+It then returns the new state. The scheduler then reads in the new message from the server and invokes the function again with the new state.
 This occurs until a state is return that is consider 'finished'. 
 \subsection*{Scheduling Algorithms}
 To make the implementation of algorithms as simple as possible and algorithm only needs to provide 2 things to be run by the scheduler, a transition function, and an initial state.
@@ -127,7 +148,173 @@ While not in the scope of this project one example of that would be a list of th
 Another advantage of using a functional programming paradigm is that the state transitions can be built individually and the used in combinators \cite{scala_fp}
 The state object will need to have at least field on it, a boolean, named isFinished. This field will inform the other part of the system whether or not the algorithm has finished.
 \subsubsection*{Last Round Robin}
-The last round robin algorithm is a naive algorithm that simply assigns jobs to the servers with the most CPU's. The 
+The last round robin algorithm is a naive algorithm that simply assigns jobs to the servers with the most CPU's.
+In the event of a tie between server types the first found server type is used and only machines in that server type are used.
+The machine types are read in from the ds-system.xml as to not burden the ds-server with calls too regularly.
+Once the largest machine type is determined the ds-server is queried for the number of servers. 
+As each job request message comes in from the ds-server the algorithm will try to assign the job to the "next available server".
+Once the algorithm reaches the last machine in the server type, it simply restarts the process from the first machine.
+This loop continues until there are no more jobs to assign.
+
+\section*{Implementation}
+The implementation of the described design used both object oriented paradigms, as well as functional programming paradigms.
+The combination of the two would allow for a software package that allows for more algorithms to be implemented with great ease, with many objects abstracting technical details away allowing the programmer interact with the business-logic of the ds-sim system.
+\subsection*{Socket Communication}
+The first level of abstraction that exists in the solution is the abstraction of the socket messaging. 
+The client interacts with the ds-server using sockets, but the operation of the algorithm and scheduling does not need to know about the specifics of that interaction.
+\newline
+Because of this we abstract the reading and writing of the messages over the socket into two separate functions that return a string, or consume (send) a string.
+There are two notable things about this abstraction. The first is the use of anonymous functions.
+The anonymous function allows us to reduce the amount of code needed to abstract the socket interaction away from the messaging service (which comes later). 
+The second is the use of the Either class. An Either allows us to handle exceptions in a more functional way\cite{bly_2018}.
+The either class has two states, left and right and they represent the result of some computation (or function call). 
+Standard practice is that the 'left' value represents the error, while the 'right' value represents the result of the computation.
+An either cannot be both 'left' and 'right'. Using this we can handle errors without dealing with exceptions, which can often be costly in computation time \cite{maurer_2013}. 
+Using this class we can code freely without having to deal with the exceptions from dealing with the Socket class, and just worry about mapping the read or written value.
+
+\subsection*{Client Messaging System}
+Given that we now have a generic function for read and a generic function for writing we can now build a service that will allow us to abstract some ds-server implementation details out from the rest of the system.
+We abstract the interactions with the ds-server into the follow functions:
+\begin{itemize}
+    \item signalRedy
+    \item getServerState
+    \item loginToServer
+    \item scheduleJob
+    \item quit
+    \item pushJob
+    \item getMessage
+    \item beginScheduling
+\end{itemize}
+loginToServer takes a string, username, and performs the required handshaking to start the server.
+Scheduling a job is handled by the scheduleJob function (because of course it should \cite{loureiro_2015}). It simply takes the job id, server type and server id, then constructs the schedule message then sends it.
+The quit function handles the final handshake required to complete the simulation. It also runs a 'finish' function that is provided on construction to the CMS in case there is anything needed to be done by the CMS implementation (for example, closing sockets).
+`pushJob' is simply a wrapper around sending the 'PSHJ' message. The `beginScheduling' function is simply a rename of the `signalRedy' function, but was extracting in case there were other operations required to start the scheduling, compared to signaling to the ds-server that the client is ready for the next message. A future piece of refactor work could be to remove this as it's current redundant. 
+\newline
+The 'getServerState' function send the GETS message to the server based on the ConfigRequest pojo.
+This pojo represents the params of the GETS message, and can also be deserialized to the proper format to be send to the ds-server.
+The function then returns a list of the ServerStateItem pojos, which represent the various machines in the system. This pojo is based on the XSD for the ds-system.xml file.
+The function is also overloaded so it can be called with no request arg to retrieve the entire system configuration, which corresponds to the 'GETS All' call.
+
+\subsection*{LRR Algorithm Implementation}
+Since the ClientMessagingService (CMS) gives us a way to interface with the ds-server on a purely business logic level, we can now easily implement a state action for our algorithm.
+First we define a state object. For the LRR algorithm there are only 3 pieces of information we need to keep track off (outside of whether or not the state is a finishing state):
+\begin{itemize}
+    \item The largest server type
+    \item The id of the last server a job was scheduled to
+    \item The total number of machines with the largest server type
+\end{itemize}
+This state definition depends on some nuance of the ds-server, in that all server ids are based on an integer sequence that increases by 1. 
+If the machine ids were not a monotonically increasing sequence the state would have to capture a list of ids that defined the order in which the jobs would be scheduled.
+Since the largest server type, and total number of machines should never change once the system is running, a piece of futurework could be to create a state that is simpler and create a closure over those two variables instead of carrying them around in the state pojo.
+\newline
+With that state definition we can create a simple state action that will be invoked each time a new message is received. 
+The easiest way to define that state action is by thinking of the operations for each received message. The most complicated of these will be the JOBN message, which corresponds to the ds-server generating a job to be scheduled.
+For this message the state action will get id of the next server to have a job scheduled. This is a simple mathematical formula 
+\begin{math}
+    x = (y + 1) \bmod n
+\end{math}
+where y is the id of the server that was last assigned a job, and n is the number of servers with the largest server type.
+The function then uses the CMS to schedule the job and tells the ds-server it is ready for the next message.
+It generates the new state and returns it.
+\newline
+The other parts of the state action are much simpler. If we receive the 'NONE' message we return a new state that is marked as finished.
+All other messages will end up returning the same state as before, except the processing for a job completed message will also indicate to the ds-server that we're ready to receive the next message.
+\subsection*{Scheduling Service}
+With the definition of a state action and state object defined we can now delve into the implementation of the scheduling service.
+The scheduling service should not care for the specific details of the LRR algorithm, but rather the generic description of the state action and state definition. 
+The service should also be able to map the algorithms to some key so that we can store and run different types of algorithms that can be driven by command-line arguments.
+The easiest way to store this would be to take a map of the state actions and an initial state.
+However, to keep the algorithms as pure functions and to take advantage of the anonymous functions in Java 8 we need some way to pass in the CMS to the state action. 
+The easiest way to do this is to use the factory pattern. The factory pattern is based on the idea of separating the creation of an object from it's definition \cite{gamma_2016}.
+While the definition of our factory is closer to a closure than a traditional factory the ideal of the pattern still remains.
+We can also see that the definition returns the initial state (figure \ref{algorithm_factory}), meaning that an 'algorithm' actuall consists of the state action and the initial state.
+\newline
+\begin{figure}[ht!]
+\begin{lstlisting}
+@FunctionalInterface
+public interface AlgorithmFactory<T extends State> {
+    Pair<StateMachine<T, String>, Either<String, T>> createAlgorithm(ClientMessagingService cms);
+}
+\end{lstlisting}
+\label{algorithm_factory}
+\caption{Definition of our algorithm factory interface}
+\end{figure}
+The scheduling service can now take a map of algorithm factories so it can run many different algorithms.
+However, due to the way generics work in Java 8 the map definition erases the generic type of 'T', and assumes that all algorithms are of type '? extends State'\ref{ss_ctor}.
+\begin{figure}[ht!]
+\begin{lstlisting}
+public SchedulingService(final ClientMessagingService clientMessagingService, Map<String, Pair<StateMachineFactory<? extends State>, StateConfigurationFactory<? extends State>>> algorithms) {
+    this.clientMessagingService = clientMessagingService;
+    this.algorithms = algorithms;
+}
+\end{lstlisting}
+\label{ss_ctor}
+\caption{Constructor definition for the Scheduling Service}
+\end{figure}
+\newline
+With a map of algorithms that the service can run we look at the definition of the main function that will run the algorithm to completion.
+The running of the algorithm is covered by two functions: `scheduleJobUsingAlgorithm`, and `run`.
+The scheduleJobUsingAlgorithm function handles the handshaking to start the simulation, selects the algorithm to run by calling the factory to get the state action and initial state.
+It then passes the action and state to the run function.
+\newline
+
+\begin{figure}[ht!]
+\begin{lstlisting}
+Either<String, String> run(StateMachine<State, String> stateMachine, State state, String initialMessage) {
+        State currentState = state;
+        Either<String, String> message = getNextMessage();
+        while(true) {
+            if (message.isLeft()) {
+                return message; // Could not read message
+            } else {
+                Either<String, ? extends State> accept = stateMachine(message, state); // Run the state action
+                if (accept.isLeft()) {
+                    fail; //failed to process message
+                } else {
+                    currentState = accept.right().value();
+                    if (currentState = finished) { 
+                        finishRunningAlgorithm; // We finished processing
+                    }
+                }
+            }
+            message = clientMessagingService.getMessage(); // Get the next message and continue processing
+        }
+}
+\end{lstlisting}
+\label{run_psuedocode}
+\caption{The psuedocode of the scheduling services run function}
+\end{figure}
+The run function is essentially a while loop that will continue processing messages until it gets a failure or the state machine returns a finished state (label \ref{run_psuedocode})
+Between the scheduling function that handshakes, and the run function that performs the actual state transforms that covers the entirety of the implementation of the SchedulingService.
+\subsection*{Test Driven Development}
+While most of the implementation fell out of the design of the system the actual implementation was achieved by using Tes Driven Development (TDD).
+TDD is the practice of writing tests first, then the code needed to verify those tests \cite{beck_2015}.
+This practice allows for more robust code, and when partnered with git made it easy to roll-back bugs if they cropped up. 
+Whilst this might be an unnecessary practice for a solo project, it definitely helped when refactoring large chunks of the code base.
+One example was when moving from using a class to define the algorithm factory to using anonymous functions. 
+Because there were many tests ensuring the quality of the code, and the fact a common interface was coded to I could make changes to the implementation without wondering whether it works or not.
+% \section*{Introduction}
+% The first assignment for COMP3100 involves creating a scheduler to operate in tandem with the ds-sim server application.
+% The scheduler would assign jobs using a naive `round robin' algorithm, only allocating to the servers within the largest type as defined by the number of cores each server has.
+% The purpose of the assignment was to introduce students to some concepts in distributed systems such as job scheduling, as well as some core java programming concepts such as socket programming.
+
+% \section*{Design}
+% The scheduler for this was designed so that the algorithm for scheduling is separate from the running of the scheduler.
+% This decision was made so that the algorithm can be considered to be a simple state machine that will run until it arrives at a final state. 
+% With this in mind the client can be considered, at a high level, two separate parts; the scheduler, and the algorithm.
+% \newline
+% For the scheduler to run it requires 2 components or arguments, a state machine function and an initial state. 
+% A state machine function is defined as a function over the incoming message from ds-server and the current state.
+% It then returns the new state. THe scheduler then reads in the new message from the server and invokes the function again with the new state.
+% This occurs until a state is return that is consider 'finished'. 
+% \subsection*{Scheduling Algorithms}
+% To make the implementation of algorithms as simple as possible and algorithm only needs to provide 2 things to be run by the scheduler, a transition function, and an initial state.
+% The transition function essentially forms a state action or state transition \cite{scala_fp} over a specified 'state type', which contains all the information the algorithm needs to schedule jobs.
+% While not in the scope of this project one example of that would be a list of the unavailable/failed servers, so the algorithms could make sure they don't assign jobs to servers that will not process them.
+% Another advantage of using a functional programming paradigm is that the state transitions can be built individually and the used in combinators \cite{scala_fp}
+% The state object will need to have at least field on it, a boolean, named isFinished. This field will inform the other part of the system whether or not the algorithm has finished.
+% \subsubsection*{Last Round Robin}
+% The last round robin algorithm is a naive algorithm that simply assigns jobs to the servers with the most CPU's. The 
 %----------------------------------------------------------------------------------------
 %	REFERENCE LIST
 %----------------------------------------------------------------------------------------

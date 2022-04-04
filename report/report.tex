@@ -128,6 +128,7 @@ However, to keep the algorithms as pure functions and to take advantage of the a
 The easiest way to do this is to use the factory pattern. The factory pattern is based on the idea of separating the creation of an object from it's definition \cite{gamma_2016}.
 While the definition of our factory is closer to a closure than a traditional factory the ideal of the pattern still remains.
 We can also see that the definition returns the initial state (figure \ref{algorithm_factory}), meaning that an 'algorithm' actuall consists of the state action and the initial state.
+\newline
 \begin{figure}[ht!]
 \begin{lstlisting}
 @FunctionalInterface
@@ -138,7 +139,6 @@ public interface AlgorithmFactory<T extends State> {
 \label{algorithm_factory}
 \caption{Definition of our algorithm factory interface}
 \end{figure}
-\newline
 The scheduling service can now take a map of algorithm factories so it can run many different algorithms.
 However, due to the way generics work in Java 8 the map definition erases the generic type of 'T', and assumes that all algorithms are of type '? extends State'\ref{ss_ctor}.
 \begin{figure}[ht!]
@@ -151,6 +151,48 @@ public SchedulingService(final ClientMessagingService clientMessagingService, Ma
 \label{ss_ctor}
 \caption{Constructor definition for the Scheduling Service}
 \end{figure}
+\newline
+With a map of algorithms that the service can run we look at the definition of the main function that will run the algorithm to completion.
+The running of the algorithm is covered by two functions: `scheduleJobUsingAlgorithm`, and `run`.
+The scheduleJobUsingAlgorithm function handles the handshaking to start the simulation, selects the algorithm to run by calling the factory to get the state action and initial state.
+It then passes the action and state to the run function.
+\newline
+
+\begin{figure}[ht!]
+\begin{lstlisting}
+Either<String, String> run(StateMachine<State, String> stateMachine, State state, String initialMessage) {
+        State currentState = state;
+        Either<String, String> message = getNextMessage();
+        while(true) {
+            if (message.isLeft()) {
+                return message; // Could not read message
+            } else {
+                Either<String, ? extends State> accept = stateMachine(message, state); // Run the state action
+                if (accept.isLeft()) {
+                    fail; //failed to process message
+                } else {
+                    currentState = accept.right().value();
+                    if (currentState = finished) { 
+                        finishRunningAlgorithm; // We finished processing
+                    }
+                }
+            }
+            message = clientMessagingService.getMessage(); // Get the next message and continue processing
+        }
+}
+\end{lstlisting}
+\label{run_psuedocode}
+\caption{The psuedocode of the scheduling services run function}
+\end{figure}
+The run function is essentially a while loop that will continue processing messages until it gets a failure or the state machine returns a finished state (label \ref{run_psuedocode})
+Between the scheduling function that handshakes, and the run function that performs the actual state transforms that covers the entirety of the implementation of the SchedulingService.
+\subsection*{Test Driven Development}
+While most of the implementation fell out of the design of the system the actual implementation was achieved by using Tes Driven Development (TDD).
+TDD is the practice of writing tests first, then the code needed to verify those tests \cite{beck_2015}.
+This practice allows for more robust code, and when partnered with git made it easy to roll-back bugs if they cropped up. 
+Whilst this might be an unnecessary practice for a solo project, it definitely helped when refactoring large chunks of the code base.
+One example was when moving from using a class to define the algorithm factory to using anonymous functions. 
+Because there were many tests ensuring the quality of the code, and the fact a common interface was coded to I could make changes to the implementation without wondering whether it works or not.
 \bibliographystyle{ieeetr}
 \bibliography{comp3100project}
 
