@@ -1,5 +1,27 @@
 \documentclass[12pt, letterpaper]{article}
 \usepackage[utf8]{inputenc}
+\usepackage{listings, style/lstlisting} % Environment for non-formatted code, !uses style file!
+\usepackage{color}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\lstset{frame=tb,
+  language=Java,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
 \title{COMP3100 Assignment 1}
 \author{James Nugent - SID: 41478886}
 
@@ -64,11 +86,14 @@ We abstract the interactions with the ds-server into the follow functions:
     \item beginScheduling
 \end{itemize}
 loginToServer takes a string, username, and performs the required handshaking to start the server.
+Scheduling a job is handled by the scheduleJob function (because of course it should \cite{loureiro_2015}). It simply takes the job id, server type and server id, then constructs the schedule message then sends it.
+The quit function handles the final handshake required to complete the simulation. It also runs a 'finish' function that is provided on construction to the CMS in case there is anything needed to be done by the CMS implementation (for example, closing sockets).
+`pushJob' is simply a wrapper around sending the 'PSHJ' message. The `beginScheduling' function is simply a rename of the `signalRedy' function, but was extracting in case there were other operations required to start the scheduling, compared to signaling to the ds-server that the client is ready for the next message. A future piece of refactor work could be to remove this as it's current redundant. 
+\newline
 The 'getServerState' function send the GETS message to the server based on the ConfigRequest pojo.
 This pojo represents the params of the GETS message, and can also be deserialized to the proper format to be send to the ds-server.
 The function then returns a list of the ServerStateItem pojos, which represent the various machines in the system. This pojo is based on the XSD for the ds-system.xml file.
 The function is also overloaded so it can be called with no request arg to retrieve the entire system configuration, which corresponds to the 'GETS All' call.
-TODO: Finish this section
 
 \subsection*{LRR Algorithm Implementation}
 Since the ClientMessagingService (CMS) gives us a way to interface with the ds-server on a purely business logic level, we can now easily implement a state action for our algorithm.
@@ -80,7 +105,7 @@ First we define a state object. For the LRR algorithm there are only 3 pieces of
 \end{itemize}
 This state definition depends on some nuance of the ds-server, in that all server ids are based on an integer sequence that increases by 1. 
 If the machine ids were not a monotonically increasing sequence the state would have to capture a list of ids that defined the order in which the jobs would be scheduled.
-Since 2 parts of the state should never change once the system is running a piece of futurework could be to create a state that is simpler and create a closure over those 2 variables instead of carrying them around in the state pojo.
+Since the largest server type, and total number of machines should never change once the system is running, a piece of futurework could be to create a state that is simpler and create a closure over those two variables instead of carrying them around in the state pojo.
 \newline
 With that state definition we can create a simple state action that will be invoked each time a new message is received. 
 The easiest way to define that state action is by thinking of the operations for each received message. The most complicated of these will be the JOBN message, which corresponds to the ds-server generating a job to be scheduled.
@@ -94,6 +119,38 @@ It generates the new state and returns it.
 \newline
 The other parts of the state action are much simpler. If we receive the 'NONE' message we return a new state that is marked as finished.
 All other messages will end up returning the same state as before, except the processing for a job completed message will also indicate to the ds-server that we're ready to receive the next message.
+\subsection*{Scheduling Service}
+With the definition of a state action and state object defined we can now delve into the implementation of the scheduling service.
+The scheduling service should not care for the specific details of the LRR algorithm, but rather the generic description of the state action and state definition. 
+The service should also be able to map the algorithms to some key so that we can store and run different types of algorithms that can be driven by command-line arguments.
+The easiest way to store this would be to take a map of the state actions and an initial state.
+However, to keep the algorithms as pure functions and to take advantage of the anonymous functions in Java 8 we need some way to pass in the CMS to the state action. 
+The easiest way to do this is to use the factory pattern. The factory pattern is based on the idea of separating the creation of an object from it's definition \cite{gamma_2016}.
+While the definition of our factory is closer to a closure than a traditional factory the ideal of the pattern still remains.
+We can also see that the definition returns the initial state (figure \ref{algorithm_factory}), meaning that an 'algorithm' actuall consists of the state action and the initial state.
+\begin{figure}[ht!]
+\begin{lstlisting}
+@FunctionalInterface
+public interface AlgorithmFactory<T extends State> {
+    Pair<StateMachine<T, String>, Either<String, T>> createAlgorithm(ClientMessagingService cms);
+}
+\end{lstlisting}
+\label{algorithm_factory}
+\caption{Definition of our algorithm factory interface}
+\end{figure}
+\newline
+The scheduling service can now take a map of algorithm factories so it can run many different algorithms.
+However, due to the way generics work in Java 8 the map definition erases the generic type of 'T', and assumes that all algorithms are of type '? extends State'\ref{ss_ctor}.
+\begin{figure}[ht!]
+\begin{lstlisting}
+public SchedulingService(final ClientMessagingService clientMessagingService, Map<String, Pair<StateMachineFactory<? extends State>, StateConfigurationFactory<? extends State>>> algorithms) {
+    this.clientMessagingService = clientMessagingService;
+    this.algorithms = algorithms;
+}
+\end{lstlisting}
+\label{ss_ctor}
+\caption{Constructor definition for the Scheduling Service}
+\end{figure}
 \bibliographystyle{ieeetr}
 \bibliography{comp3100project}
 
