@@ -61,3 +61,6 @@ report/*.fdb_latexmk
 report/*.fls
 report/*.out
 report/style/
+
+# Server artefact
+server/
