@@ -1,7 +1,8 @@
 package xyz.jamesnuge.state;
 
-import fj.data.List;
 import fj.data.Collectors;
+import fj.data.List;
+
 import java.util.stream.Stream;
 
 public class ServerState {

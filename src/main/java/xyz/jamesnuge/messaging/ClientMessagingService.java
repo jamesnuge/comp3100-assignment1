@@ -1,21 +1,5 @@
 package xyz.jamesnuge.messaging;
 
-import static fj.data.Either.left;
-import static fj.data.Either.right;
-import static fj.data.List.list;
-import static fj.data.List.nil;
-import static xyz.jamesnuge.MessageParser.Message.HELO;
-import static xyz.jamesnuge.MessageParser.Message.OK;
-import static xyz.jamesnuge.MessageParser.Message.PSHJ;
-import static xyz.jamesnuge.MessageParser.Message.QUIT;
-import static xyz.jamesnuge.MessageParser.Message.REDY;
-import static xyz.jamesnuge.MessageParser.Message.SCHD;
-import static xyz.jamesnuge.Util.chain;
-import static xyz.jamesnuge.Util.toOption;
-
-import java.util.function.Function;
-import java.util.function.Supplier;
-
 import fj.data.Either;
 import fj.data.List;
 import fj.data.Option;
@@ -23,6 +7,17 @@ import xyz.jamesnuge.MessageParser;
 import xyz.jamesnuge.MessageParser.InboudMessage;
 import xyz.jamesnuge.MessageParser.Message;
 import xyz.jamesnuge.state.ServerStateItem;
+
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+import static fj.data.Either.left;
+import static fj.data.Either.right;
+import static fj.data.List.list;
+import static fj.data.List.nil;
+import static xyz.jamesnuge.MessageParser.Message.*;
+import static xyz.jamesnuge.Util.chain;
+import static xyz.jamesnuge.Util.toOption;
 
 public class ClientMessagingService {
 

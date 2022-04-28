@@ -1,10 +1,10 @@
 package xyz.jamesnuge.scheduling.lrr;
 
-import java.util.Objects;
-
 import fj.F;
 import fj.function.Try2;
 import xyz.jamesnuge.scheduling.State;
+
+import java.util.Objects;
 
 
 public class LRRInternalState implements State {

@@ -1,18 +1,6 @@
 package xyz.jamesnuge.scheduling;
 
-import static fj.data.Either.right;
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.singletonMap;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static xyz.jamesnuge.util.TestUtil.assertLeft;
-import static xyz.jamesnuge.util.TestUtil.assertRight;
-
-import java.util.concurrent.TimeUnit;
-
+import fj.data.Either;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -20,10 +8,19 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-
-import fj.data.Either;
 import xyz.jamesnuge.Pair;
 import xyz.jamesnuge.messaging.ClientMessagingService;
+
+import java.util.concurrent.TimeUnit;
+
+import static fj.data.Either.right;
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonMap;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static xyz.jamesnuge.util.TestUtil.assertLeft;
+import static xyz.jamesnuge.util.TestUtil.assertRight;
 
 class SchedulingServiceTest {
 

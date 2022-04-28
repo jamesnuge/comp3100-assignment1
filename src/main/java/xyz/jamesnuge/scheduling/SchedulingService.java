@@ -1,15 +1,15 @@
 package xyz.jamesnuge.scheduling;
 
+import fj.data.Either;
+import xyz.jamesnuge.Pair;
+import xyz.jamesnuge.messaging.ClientMessagingService;
+
+import java.util.Map;
+
 import static fj.data.Either.left;
 import static fj.data.Either.right;
 import static xyz.jamesnuge.Util.chain;
 import static xyz.jamesnuge.Util.flatMap;
-
-import java.util.Map;
-
-import fj.data.Either;
-import xyz.jamesnuge.Pair;
-import xyz.jamesnuge.messaging.ClientMessagingService;
 
 public class SchedulingService {
 

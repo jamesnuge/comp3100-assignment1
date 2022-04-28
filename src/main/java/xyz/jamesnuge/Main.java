@@ -2,13 +2,7 @@ package xyz.jamesnuge;
 
 import fj.data.Either;
 import fj.data.Option;
-import java.util.Map;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.*;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,9 +16,9 @@ import xyz.jamesnuge.scheduling.StateMachineFactory;
 import xyz.jamesnuge.scheduling.firstCapable.FcFactory;
 import xyz.jamesnuge.scheduling.lrr.LrrFactory;
 
-import static fj.data.Either.right;
+import java.util.Map;
+
 import static xyz.jamesnuge.SocketClientSystemFactory.generateClientSystem;
-import static xyz.jamesnuge.Util.chain;
 import static xyz.jamesnuge.Util.mapOf;
 
 public class Main {

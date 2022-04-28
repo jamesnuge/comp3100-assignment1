@@ -1,20 +1,17 @@
 package xyz.jamesnuge;
 
 import fj.data.Either;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import static fj.data.Either.right;
-import static xyz.jamesnuge.Util.chain;
-import static xyz.jamesnuge.Util.flatMap;
-import static xyz.jamesnuge.Util.match;
-import static xyz.jamesnuge.Util.toOption;
-import static xyz.jamesnuge.Util.tryUntil;
+import static xyz.jamesnuge.Util.*;
 
 public class MessageParser {
 

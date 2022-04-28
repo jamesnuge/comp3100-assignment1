@@ -1,18 +1,13 @@
 package xyz.jamesnuge;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.net.Socket;
-
 import fj.data.Either;
 import fj.data.Option;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import xyz.jamesnuge.messaging.ClientMessagingService;
+
+import java.io.*;
+import java.net.Socket;
 
 public class SocketClientSystemFactory {
 

@@ -1,13 +1,13 @@
 package xyz.jamesnuge;
 
 import fj.data.Either;
-import java.io.File;
-import java.util.List;
-
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Unmarshaller;
 import xyz.jamesnuge.config.Server;
 import xyz.jamesnuge.config.SystemConfig;
+
+import java.io.File;
+import java.util.List;
 
 public class SystemInformationUtil {
 

@@ -1,31 +1,24 @@
 package xyz.jamesnuge.messaging;
 
+import fj.data.Either;
+import fj.data.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.*;
+import xyz.jamesnuge.state.ServerStateItem;
+
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 import static fj.data.Either.left;
 import static fj.data.Either.right;
 import static fj.data.List.list;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static xyz.jamesnuge.fixtures.ServerStateItemFixtures.SERVER_STATE_ITEM;
 import static xyz.jamesnuge.fixtures.ServerStateItemFixtures.createServerStateString;
 import static xyz.jamesnuge.util.TestUtil.assertRight;
-
-import java.util.function.Function;
-import java.util.function.Supplier;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InOrder;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-
-import fj.data.Either;
-import fj.data.List;
-import xyz.jamesnuge.state.ServerStateItem;
 
 class ClientMessagingServiceTest {
 
