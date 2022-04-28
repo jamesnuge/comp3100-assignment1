@@ -10,9 +10,13 @@ import java.net.Socket;
 
 import fj.data.Either;
 import fj.data.Option;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import xyz.jamesnuge.messaging.ClientMessagingService;
 
 public class SocketClientSystemFactory {
+
+    private static final Logger LOGGER = LogManager.getLogger(SocketClientSystemFactory.class);
 
     private SocketClientSystemFactory() {
     }
@@ -20,10 +24,10 @@ public class SocketClientSystemFactory {
     // This factory is used to extract away the socket/stream details from the messaging service.
     // The service only needs to know how to send and read messages, along with closing.
     public static Option<ClientMessagingService> generateClientSystem(String host, Integer port) {
-        System.out.println("Connecting to server...");
+        LOGGER.info("Connecting to server...");
         try {
             final Socket socket = new Socket(host, port);
-            System.out.println("Connected to server");
+            LOGGER.info("Connected to server");
             final InputStream is = socket.getInputStream();
             final OutputStream os = socket.getOutputStream();
             final PrintWriter writer = new PrintWriter(os);
@@ -52,7 +56,7 @@ public class SocketClientSystemFactory {
                         try {
                             socket.close();
                         } catch (IOException e) {
-                            System.out.println("Unable to close socket: " + e.getMessage());
+                            LOGGER.error("Unable to close socket: ", e);
                         }
                     }
             ));

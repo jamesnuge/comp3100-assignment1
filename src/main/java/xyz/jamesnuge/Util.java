@@ -125,9 +125,4 @@ public class Util {
         }
     }
 
-    public static Either<String, String> printString(String s) {
-        System.out.println(s);
-        return right(s);
-    }
-
 }

@@ -6,7 +6,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import static fj.data.Either.right;
 import static xyz.jamesnuge.Util.chain;
 import static xyz.jamesnuge.Util.flatMap;
 import static xyz.jamesnuge.Util.match;
@@ -14,6 +17,8 @@ import static xyz.jamesnuge.Util.toOption;
 import static xyz.jamesnuge.Util.tryUntil;
 
 public class MessageParser {
+
+    public static Logger LOGGER = LogManager.getLogger(MessageParser.class);
 
     public static enum Message {
         HELO,
@@ -57,15 +62,20 @@ public class MessageParser {
                         read.get(),
                         match(predicate)
                 )
-        )), Util::printString);
+        )), MessageParser::printString);
     }
 
     public static Either<String, String> sendMessage(final Function<String, Either<String, String>> write, String message) {
-        System.out.println("Sent message: " + message);
+        LOGGER.info("Sent message: " + message);
         return write.apply(message);
     }
 
     public static Either<String, String> sendMessage(final Function<String, Either<String, String>> write, Message message) {
         return sendMessage(write, message.name());
+    }
+
+    private static Either<String, String> printString(String s) {
+        LOGGER.debug(s);
+        return right(s);
     }
 }
