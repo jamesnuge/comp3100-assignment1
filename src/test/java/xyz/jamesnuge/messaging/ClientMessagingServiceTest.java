@@ -29,14 +29,17 @@ class ClientMessagingServiceTest {
     Supplier<Either<String, String>> readMock;
 
     @Mock
+    Function<Integer, Either<String, List<String>>> readLinesMock;
+
+    @Mock
     Runnable finishMock;
 
-    @InjectMocks
     ClientMessagingService clientMessagingService;
 
     @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
+        clientMessagingService = new ClientMessagingService(writeMock, readMock, readLinesMock, finishMock);
         when(writeMock.apply(any())).thenReturn(right("write"));
     }
 
@@ -58,10 +61,11 @@ class ClientMessagingServiceTest {
     public void testGetServerStateForAllComputers() {
         final ServerStateItem generatedState = SERVER_STATE_ITEM;
         when(readMock.get()).thenReturn(
-                right("DATA"),
-                right(createServerStateString(generatedState)),
+                right("DATA 1 12314"),
+                right("."),
                 left("")
         );
+        when(readLinesMock.apply(any())).thenReturn(right(list(createServerStateString(generatedState))));
         final Either<String, List<ServerStateItem>> serverState = clientMessagingService.getServerState();
         assertRight(
                 list(generatedState),
