@@ -27,3 +27,26 @@ Note: To run the buildServer script you will need `gcc`, `make` and `libxml2`. T
 ### Building
 
 To build an uber-jar for use on other machines/environments simply run `gradle build` and copy the jar from 'build/lib'
+
+## Available Algorithms
+
+Currently there are 3 algorithms available in this client implementation:
+- Largest Round Robin (LRR)
+- Best Fit (BF)
+- Worst Fit (WF)
+
+### Largest Round Robin
+
+Largest round robin is a simple algorithm that will schedule all the jobs among the group of machines with the largest number of cores. 
+It assigns a job to each server sequentially, then repeats the process when more jobs come in than there are machines
+
+### Best Fit
+
+The Best Fit algorithm tries to find the server that has the lowest number of cores required for the job that currently has no active jobs.
+If there are no servers that have no jobs either active or waiting, the algorithm assigns the job to the first machine with the lowest number of cores
+
+### Worst fit
+
+The worst fit algorithm is the opposite of the best fit algorithm, as the name implies.
+It will attempt to assign the job to a capable and non-busy machine with the largest number of cores.
+If there are no machines that match that description it will assign it to the first of the largest (number of cores) server.
