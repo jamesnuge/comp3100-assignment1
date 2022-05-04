@@ -27,6 +27,24 @@ public class ServerStateItemFixtures {
         );
     }
 
+    public static ServerStateItem generateServerStateItemWithNoJobs(String type, Integer id) {
+        return generateServerStateItem(type, id, 0, 0);
+    }
+
+    public static ServerStateItem generateServerStateItem(String type, Integer id, Integer activeJobs, Integer waitingJobs) {
+        return new ServerStateItem(
+                type,
+                id,
+                INACTIVE,
+                -1L,
+                id,
+                id.longValue(),
+                id.longValue(),
+                activeJobs,
+                waitingJobs
+        );
+    }
+
     public static String createServerStateString(ServerStateItem item) {
         return item.getType() + " " +
                 item.getId() + " " +

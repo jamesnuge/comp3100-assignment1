@@ -13,6 +13,7 @@ import xyz.jamesnuge.messaging.ClientMessagingService;
 import xyz.jamesnuge.scheduling.SchedulingService;
 import xyz.jamesnuge.scheduling.StateConfigurationFactory;
 import xyz.jamesnuge.scheduling.StateMachineFactory;
+import xyz.jamesnuge.scheduling.bestFit.BfFactory;
 import xyz.jamesnuge.scheduling.firstCapable.FcFactory;
 import xyz.jamesnuge.scheduling.lrr.LrrFactory;
 
@@ -35,6 +36,7 @@ public class Main {
         if (maybeMessagingSystem.isSome()) {
             Map<String, Pair<StateMachineFactory<?>, StateConfigurationFactory<?>>> configMap = mapOf("LRR", Pair.of(LrrFactory.STATE_MACHINE, LrrFactory.CONFIGURATION));
             configMap.put("FC", Pair.of(FcFactory.STATE_MACHINE, FcFactory.CONFIGURATION));
+            configMap.put("BF", Pair.of(BfFactory.STATE_MACHINE, BfFactory.CONFIGURATION));
             final SchedulingService service = new SchedulingService(
                     maybeMessagingSystem.some(),
                     configMap

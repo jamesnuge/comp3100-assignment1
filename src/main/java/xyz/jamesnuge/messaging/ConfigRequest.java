@@ -35,6 +35,10 @@ public class ConfigRequest implements ToServerMessage {
         return new ConfigRequest("Capable", cores, memory, disk);
     }
 
+    public static ConfigRequest createCapableTypeConfigRequestForJob(NewJobRequest request) {
+        return createCapableTypeConfigRequest(request.core, request.memory, request.disk);
+    }
+
     public static ConfigRequest createAvailTypeConfigRequest(
             final Integer cores,
             final Long memory,

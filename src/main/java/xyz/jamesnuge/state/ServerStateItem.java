@@ -91,6 +91,10 @@ public ServerStateItem(
         return runningJobs;
     }
 
+    public boolean hasNoJobs() {
+        return this.runningJobs == 0 && this.waitingJobs == 0;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
