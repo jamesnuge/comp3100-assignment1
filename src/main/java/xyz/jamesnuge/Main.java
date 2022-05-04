@@ -18,6 +18,7 @@ import xyz.jamesnuge.scheduling.firstCapable.FcFactory;
 import xyz.jamesnuge.scheduling.lrr.LrrFactory;
 
 import java.util.Map;
+import xyz.jamesnuge.scheduling.worstFit.WfFactory;
 
 import static xyz.jamesnuge.SocketClientSystemFactory.generateClientSystem;
 import static xyz.jamesnuge.Util.mapOf;
@@ -37,6 +38,7 @@ public class Main {
             Map<String, Pair<StateMachineFactory<?>, StateConfigurationFactory<?>>> configMap = mapOf("LRR", Pair.of(LrrFactory.STATE_MACHINE, LrrFactory.CONFIGURATION));
             configMap.put("FC", Pair.of(FcFactory.STATE_MACHINE, FcFactory.CONFIGURATION));
             configMap.put("BF", Pair.of(BfFactory.STATE_MACHINE, BfFactory.CONFIGURATION));
+            configMap.put("WF", Pair.of(WfFactory.STATE_MACHINE, WfFactory.CONFIGURATION));
             final SchedulingService service = new SchedulingService(
                     maybeMessagingSystem.some(),
                     configMap
